@@ -11,7 +11,7 @@ module.exports = {
   },
   ga: '0', // Google Analytics Tracking ID
   author: {
-    name: `신수웅`,
+    name: `Bear`,
     bio: {
       role: `백엔드 엔지니어`,
       description: ['즐겁게 개발하는'],
