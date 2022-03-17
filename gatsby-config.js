@@ -7,6 +7,14 @@ module.exports = {
 
   plugins: [
     {
+      resolve: `gatsby-plugin-gtag`,
+      options: {
+        trackingId: `UA-44363302-2`, // 측정 ID
+        head: true, // head에 tracking script를 넣고 싶다면 true로 변경 
+        anonymize: true,
+      },
+    },
+    {
       resolve: `gatsby-source-filesystem`,
       options: {
         name: `assets`,
