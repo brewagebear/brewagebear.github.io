@@ -163,7 +163,7 @@ PBKDF2는 NIST(미국표준기술연구소)에 의해서 승인된 알고리즘�
    이는 아래 사진과 같다.
 
 <div style="text-align: center">
-<img src ="https://dailyworker.github.io/assets/images/symmetric-key%20algorithm.jpg"/>
+<img src ="./symmetric-key_algorithm.jpg"/>
 </div>
    
 
@@ -178,7 +178,7 @@ PBKDF2는 NIST(미국표준기술연구소)에 의해서 승인된 알고리즘�
    이는 아래 사진과 같습니다.
 
 <div style="text-align: center">
-<img src ="https://dailyworker.github.io/assets/images/public-key_algorithm.jpg"/>
+<img src ="./public-key_algorithm.jpg"/>
 </div>
 
 #### 1.1.4 정리
@@ -212,8 +212,8 @@ AES 알고리즘의 내부에는 Add Round Key, Sub Byte, Mix Column의 반복�
 일단, **AES-128, AES-192, AES-256**이라는 단어를 많이 들어봤을 텐데 그것은 키의 길이로 결정된다.<br> 3종류의 키를 사용할 수 있는데 라운드 함수 또한, 128bit 키 사용시에는 10라운드, 192bit에서는 12라운드, 256bit에서는 14라운드를 실행한다.<br><br>
 전체적인 알고리즘은 아래의 사진과 같다. (왼쪽 : 암호화, 오른쪽 : 복호화)
 <br>
-<div style="text-align: center"><img src="https://dailyworker.github.io/assets/images/AES-Encryption.jpg" />
-<img src ="https://dailyworker.github.io/assets/images/AES-Decryption.jpg"/>
+<div style="text-align: center"><img src="./AES-Encryption.jpg" />
+<img src ="./AES-Decryption.jpg"/>
 </div>
 <br>
 그리고 AES 알고리즘 라운드 내부에서는 4가지 연산이 존재한다. 1개의 자리바꿈 연산과 3개의 치환 연산인데 다음과 같다.<br><br>
@@ -234,14 +234,14 @@ AES 알고리즘의 내부에는 Add Round Key, Sub Byte, Mix Column의 반복�
    AES에서 입력을 상태로 변환하는 방법은 아래 사진과 같다.
 
 <div style="text-align: center">
-<img src ="https://dailyworker.github.io/assets/images/inputTostr.PNG"/>
+<img src ="./inputTostr.PNG"/>
 </div>
 
    예를 들어 128 비트 입력이 아래와 같다면, 결과 상태는 사진처럼 나온다.
 >EA835CF00445332D655D98AD8596B0C5
 
 <div style="text-align: center">
-<img src ="https://dailyworker.github.io/assets/images/16bitToState.PNG"/>
+<img src ="./16bitToState.PNG"/>
 </div>
 
 2. **S-Box 치환**
@@ -259,7 +259,7 @@ AES 알고리즘의 내부에는 Add Round Key, Sub Byte, Mix Column의 반복�
    유일한 자리바꿈 연산인데 아래 그림과 같이 이루어진다.
 
    <div style="text-align: center">
-    <img src ="https://dailyworker.github.io/assets/images/Shift-Row.png"/>
+    <img src ="./Shift-Row.png"/>
    </div>
 
    복호화 할 때에는 정반대로 이루어진다. 
@@ -271,7 +271,7 @@ AES 알고리즘의 내부에는 Add Round Key, Sub Byte, Mix Column의 반복�
 
 $$\begin{bmatrix} 02 & 03 & 01 & 01 \\ 01 & 02 & 03 & 01 \\ 01 & 01 & 02 & 03 \\ 03 & 01 & 01 & 02\end{bmatrix} * \begin{bmatrix} S \end{bmatrix} = \begin{bmatrix} S' \end{bmatrix} $$
 
-    위의 행렬을 두고, 계산 형태를 보여줄텐데 이 계산은 두 가지 형태로 계산 된다.
+위의 행렬을 두고, 계산 형태를 보여줄텐데 이 계산은 두 가지 형태로 계산 된다.
    
    + **실제 행렬 곱셈을 아래와 같이 진행.** <br>
 
@@ -304,7 +304,7 @@ $$(\left\{ 02 \right\}\times\left\{ 87 \right\})\oplus(\left\{ 03 \right\}\times
    전체적인 알고리즘은 위의 그림과 같으며, 아래와 같이 진행된다.<br><br>
 
    <div style="text-align: center">
-    <img src ="https://dailyworker.github.io/assets/images/addRound-Key.png"/>
+    <img src ="./addRound-Key.png"/>
    </div>
    
    + STEP1 : 128비트의 키를 4개의 32비트 워드로 바꾼다.
@@ -369,18 +369,18 @@ AES는 블록 암호 작동 모드(block cipher mode of operation)와 결합이�
 
       그 예시로 다음 그림을 참고하자.
       
-      ![ECB 알고리즘](https://dailyworker.github.io/assets/images/640px-ECB_encryption.svg.png "ECB_encryption")
+      ![ECB 알고리즘](./640px-ECB_encryption.svg.png "ECB_encryption")
 
       ECB모드가 비트맵 이미지를 암호화하는데 사용될 때를 보면, 각 개별 픽셀의 색상은 암호화되지만, 원본에서 동일한 색상의 픽셀 패턴이 암호화된 버전에 남아 있기 때문에 전체 이미지를 공격자가 인식할 수 있음을 보여준다.<br><br>
 
-      ![ECB 비트맵 적용](https://dailyworker.github.io/assets/images/Ecb_encryption2.png "ECB_encryption_apply_bitmap")
+      ![ECB 비트맵 적용](./Ecb_encryption2.png "ECB_encryption_apply_bitmap")
 
    + **CBC(Cipher-Block Chaining)**<br>
       CBC는 간단하게 알고리즘만 보자면, 각 블록은 암호화되기 전에 이전 블록의 암호화 결과와 XOR되는데,최초 시행 시에는 최초 평문 블럭과 IV를 XOR연산한다.<br>
       이를 끝까지 반복하는데 평문의 마지막 블럭은 패딩된 블럭이다.<br>
       **이 때, IV가 같은 경우 출력 결과가 항상 같기 때문에, 매 암호화마다 다른 IV를 사용하는 것이 매우 중요하다.**
 
-       ![ECB 알고리즘](https://dailyworker.github.io/assets/images/640px-CBC_encryption.svg.png "ECB_encryption")
+       ![ECB 알고리즘](./640px-CBC_encryption.svg.png "ECB_encryption")
 
 ## STEP 3. 구현
 
@@ -655,6 +655,8 @@ public class Decryption {
 
 이상으로 포스팅을 마친다.
 
+```toc
+```
        
 # REFERENCE
 1. [안전한 패스워드 저장 - Naver D2](https://d2.naver.com/helloworld/318732)

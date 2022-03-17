@@ -1,5 +1,6 @@
 import React from 'react';
 import './style.scss';
+import 'katex/dist/katex.min.css'
 
 function PostContent({ html }) {
   return (
