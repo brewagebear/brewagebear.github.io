@@ -1,5 +1,5 @@
 {
     "componentChunkName": "component---src-pages-about-js",
     "path": "/about/",
-    "result": {"data":{"site":{"siteMetadata":{"title":"개발한입","description":"개발한입","language":"ko","author":{"name":"신수웅","bio":{"role":"백엔드 엔지니어","description":["즐겁게 개발하는"],"thumbnail":"calcifer.gif"},"social":{"github":"https://github.com/brewagebear","linkedIn":"","email":"workingssu@gmail.com"}},"about":{"timestamps":[{"date":"","activity":"","links":{"post":"","github":"","demo":"","googlePlay":"","appStore":""}}],"projects":[{"title":"","description":"","techStack":["",""],"thumbnailUrl":"","links":{"post":"","github":"","demo":"","googlePlay":"","appStore":""}}]}}}},"pageContext":{}},
+    "result": {"data":{"site":{"siteMetadata":{"title":"개발한입","description":"개발한입","language":"ko","author":{"name":"Bear","bio":{"role":"백엔드 엔지니어","description":["즐겁게 개발하는"],"thumbnail":"calcifer.gif"},"social":{"github":"https://github.com/brewagebear","linkedIn":"","email":"workingssu@gmail.com"}},"about":{"timestamps":[{"date":"","activity":"","links":{"post":"","github":"","demo":"","googlePlay":"","appStore":""}}],"projects":[{"title":"","description":"","techStack":["",""],"thumbnailUrl":"","links":{"post":"","github":"","demo":"","googlePlay":"","appStore":""}}]}}}},"pageContext":{}},
     "staticQueryHashes": ["1073350324","1956554647","2938748437","3350743975"]}
