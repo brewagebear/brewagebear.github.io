@@ -3,7 +3,7 @@ module.exports = {
   description: `개발한입`,
   language: `ko`, // `ko`, `en` => currently support versions for Korean and English
   siteUrl: `https://brewagebear.github.io`,
-  ogImage: `thumbnail.png`, // Path to your in the 'static' folder
+  ogImage: `/thumbnail.png`, // Path to your in the 'static' folder
   comments: {
     utterances: {
       repo: `brewagebear/blog-comments`, // `zoomkoding/zoomkoding-gatsby-blog`,
