@@ -1,5 +1,4 @@
 ---
-emoji: 🧢
 title: 안전한 암호화를 위한 AES 알고리즘에 대한 이해와 구현코드(Java, C#)
 date: 2019-01-16 16:00:00 +0900
 tags: 
@@ -8,6 +7,7 @@ tags:
   - Security
   - Chiphermode
   - Cryptography
+emoji: 💻
 author: 개발한입
 categories: 개발
 ---
