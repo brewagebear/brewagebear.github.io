@@ -3,9 +3,10 @@ title: 시스템 콜과 자바에서의 시스템 콜 사용례
 date: 2022-03-19 00:51:00 +0900
 tags: 
     - Java
+    - JVM
 emoji: 💻
 author: 개발한입
-categories: 인프라
+categories: 개발
 ---
 
 ```toc
@@ -43,8 +44,8 @@ categories: 인프라
 
 ## STEP 1.1 운영체제와 시스템 콜
 운영체제의 사용 목적은 다음과 같다.
-	+ **사용자가 편리하게 컴퓨터 시스템을 편리하게 사용할 수 있는 환경을 제공**
-	+ **컴퓨터 시스템 안의 하드웨어를 효율적으로 관리하기 위함**
++ **사용자가 편리하게 컴퓨터 시스템을 편리하게 사용할 수 있는 환경을 제공**
++ **컴퓨터 시스템 안의 하드웨어를 효율적으로 관리하기 위함**
 
 그렇다면 이러한 궁금증이 들 수 있다고 생각한다. 
 > 어떻게 하드웨어를 효율적으로 관리하고, 편리하게 사용할 수 있는 환경을 제공할까?
@@ -76,8 +77,8 @@ categories: 인프라
 정답이다. 
 
 운영체제는 크게 2가지 모드로 프로세스를 동작시킨다. 
-	1. 사용자 모드(User mode) 
-	2. 커널 모드(Kernel mode) 
+1. 사용자 모드(User mode) 
+2. 커널 모드(Kernel mode) 
 
 물론 크게 2가지로 나눠지는 것이고, 더 세분화된 모드들이 많다. 일단 위의 두 가지의 모드로만 봐보자. 
 
@@ -105,7 +106,7 @@ categories: 인프라
 이제 이것에 대해 알아보고자 한다.
 
 # STEP 2. 자바와 시스템 콜
-자바와 시스템 콜의 내용을 언급하기 이전에 JVM 내용이 들어갈 예정이니 [Fundamental of JVM and Class Loader in java - Java JVM과 Class Loader의 동작 과정 이해 - 개발 한입](https://dailyworker.github.io/fundamental-JVM-classloader/) 를 한번 보고오는 것도 추천한다.
+자바와 시스템 콜의 내용을 언급하기 이전에 JVM 내용이 들어갈 예정이니 [Java JVM과 Class Loader의 동작 과정 이해 - 개발 한입](https://brewagebear.github.io/fundamental-jvm-classloader/)를 한번 보고오는 것도 추천한다.
 
 위에서는 C의 예시를 들어서 시스템 콜을 얘기했다. C는 포인터를 통해서 메모리에 직접 접근할 수 있다보니 시스템 콜이 다이렉트로 발생시킬 수 있다고 할 수 있다. 물론 이 때문에 포인터를 사용해서 어떠한 작업을 한 뒤에 자원 반납을 프로그래머가 직접 작성해야되는 문제점이 있다.
 
@@ -126,9 +127,11 @@ C의 경우에는 메모리 할당하는 부분이고, Java의 경우에는 디�
 개략적으로 그린 그림이라 어떤차이인지 잘 모를 수 있다고 생각한다. 핵심은 C의 경우에는 시스템 콜을 직접 사용할 수 있지만 (`malloc` 이 시스템콜은 아니고 시스템 콜을 사용하는 API이다.) 자바의 경우에는 간접적으로 사용해야된다. 
 
 만약 C로 I/O를 한다하면 아래와 같은 흐름으로 시스템 콜이 발생할 것이다.
+
 `C 프로세스 -> 시스템 콜 -> 커널 -> 디스크 컨트롤러 -> 데이터 복사`
 
 자바는 아래와 같은 흐름으로 이뤄진다. 
+
 `JVM -> JNI -> 시스템 콜 -> 커널 -> 디스크 컨트롤러 -> 커널 버퍼 복사 -> JVM 버퍼 복사`
 
 즉, 시스템 콜을 사용하기 위해서 자바는 내부적으로 네이티브 메서드를 활용하기 때문에
@@ -163,7 +166,7 @@ C의 경우에는 메모리 할당하는 부분이고, Java의 경우에는 디�
 
 
 유저 영역과 커널 영역에서 버퍼를 사용하는 모습을 볼 수 있다.
-여기서 DMA(Direct Memory Access) [^1] 와 Disk Controller(I/O Controller) [^2] 는 운영체제 내용이니 넘어가고자 한다.
+여기서 DMA(Direct Memory Access)[^1] 와 Disk Controller(I/O Controller)[^2] 는 운영체제 내용이니 넘어가고자 한다.
 
 버퍼는 무엇이고, 왜 사용하는 것일까?
 아주 단순하다 데이터를 하나씩 여러번 반복적으로 전달하는 것보다 중간에 버퍼를 두고 그 버퍼에 데이터를 모아 한 번에 효율적이기 때문이다.
@@ -180,6 +183,7 @@ C의 경우에는 메모리 할당하는 부분이고, Java의 경우에는 디�
 먼저 버퍼를 사용하지 않는 코드를 볼텐데 코드는 다음과 같다.
 
 + 버퍼를 사용하지 않고 1바이트씩 10MB 파일을 읽어들임 
+
 ```java
 public class NotUsedBuffer {
 
@@ -259,7 +263,7 @@ public class NotUsedBuffer {
 
 따라서 속도는 제일 빠르게 된다. 
 
-전체 코드는 [blog-example/buffer-example/src/main/java at main · brewagebear/blog-example · GitHub](https://github.com/brewagebear/blog-example/tree/main/buffer-example/src/main/java) 을 참고해보자.
+전체 코드는 [blog-example/buffer-example](https://github.com/brewagebear/blog-example/tree/main/buffer-example/src/main/java) 을 참고해보자.
 
 이렇게 버퍼를 사용하지 않는 경우와 사용하는 경우는 I/O 속도차이가 꽤 난다는 것을 알 수 있다. 버퍼는 운영체제 뿐만 아니라 I/O가 많은 DB같은데서도 사용하는데 3번 예시와 같이 전체 파일의 크기로 버퍼를 만들면 당연히 `OOM` 발생 가능성이 존재하니 이를 테이블 데이터나 인덱스 크기에 맞춰서 적절한 값으로 튜닝하기도 한다. 
 
@@ -297,7 +301,7 @@ Scatter와 Gather의 흐름은 위의 그림과 같다.
 
 ### STEP 2.1.3 가상메모리 
 
-I/O 관점에서 가상메모리 [^3] 를 다룰 예정이여서 가상메모리는 다른 참고자료들을 참고해보자. 
+I/O 관점에서 가상메모리[^3] 를 다룰 예정이여서 가상메모리는 다른 참고자료들을 참고해보자. 
 
 I/O 관점에서 가상메모리르 사용함으로 얻는 장점은 다음과 같다.
 1. 실제 물리 메모리 크기보다 큰 가상 메모리 공간 사용 가능
@@ -318,7 +322,7 @@ I/O 관점에서 가상메모리르 사용함으로 얻는 장점은 다음과 �
 
 가비지 컬렉터가 가비지를 수거하는 것은 상당히 느린 작업이고, 많은 기업들이 GC 튜닝하는데 공을 들이는 이유일 것이다.
 
-이러한 문제점을 해결하기 위해 운영체제에서 지원하는 것이 `MMIO(Memory-mapped I/O)`  [^4] 이다.
+이러한 문제점을 해결하기 위해 운영체제에서 지원하는 것이 `MMIO(Memory-mapped I/O)`[^4] 이다.
 
 위의 가상메모리 부분을 구현하는 부분이 이 부분이라고 생각해도 좋을 것 같다.
 가상메모리 설명 부분에서 말했듯이 `MMIO` 를 통하면 `read()` , `write()` 와 같은 시스템 콜을 할 필요가 없어진다고 하였다. 
@@ -383,6 +387,8 @@ NIO에서는 셀렉터를 이용함으로써 단 한 개의 쓰레드로 수천�
 고전적인 Blocking I/O와 NIO의 차이도 알아보았는데 아마도 다음에는 NIO에 대해서 얘기를 하면서 깊게 들어가볼까 한다.
 
 대부분의 내용은 [자바 IO & NIO 네트워크 프로그래밍](https://www.hanbit.co.kr/media/books/book_view.html?p_code=B3301693698) 책을 참고하였다.
+
+운영체제의 내용은 [KOCW - 이화여대 운영체제](http://www.kocw.net/home/search/kemView.do?kemId=1046323) 강의 내용이 매우 좋으니 한번 쯤 보기를 권한다.
 
 # REFERENCE 
 1. [intro-syscall](https://pages.cs.wisc.edu/~remzi/OSFEP/intro-syscall.pdf)
