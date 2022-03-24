@@ -251,6 +251,8 @@
 </ol>
 <p>사실 위 내용은 아주 간단하게 HTTPS Handshake를 요약해둔 것이다.</p>
 <p><code class="language-text">Server Hello</code> 단계에서도 내부적으로 세분화 된 단계들이 존재하나 이 부분이 궁금하다면 <a href="https://www.acunetix.com/blog/articles/establishing-tls-ssl-connection-part-5/">TLS Security 5: Establishing a TLS Connection | Acunetix</a> 여기를 참고하자.</p>
+<p>위의 아티클은 시리즈 글인데 1~6까지 매우 내용이 좋았다.</p>
+<p>SSL/TLS의 역사 요약은 <a href="https://www.acunetix.com/blog/articles/history-of-tls-ssl-part-2/">A Brief History of SSL/TLS</a>를 참고할 수 있으며, 위에서 언급한 취약점에 대응 방안은 <a href="https://www.acunetix.com/blog/articles/tls-vulnerabilities-attacks-final-part/">Examples of TLS Vulnerabilities and Attacks</a>을 참고해보자.</p>
 <p>HTTPS는 위와 같이 <strong>연결 수립과정에서는 비대칭키를 활용</strong>하여 세션 키를 만든 후에 연결 수립이 완료된 후에는 이 <strong>세션 키를 대칭키 암호화 형식</strong>으로 주고 받는 식으로 보안성을 높였다.</p>
 <p>대략적으로 HTTPS에 알게되었으니 이제 진짜로 우리 로컬 서버에 HTTPS를 적용해보도록 하자.</p>
 <hr>
@@ -646,7 +648,12 @@
 <li><a href="https://www.cloudflare.com/ko-kr/learning/ssl/what-happens-in-a-tls-handshake/">What happens in a TLS handshake? | SSL handshake | Cloudflare</a></li>
 <li><a href="https://www.cloudflare.com/ko-kr/learning/ssl/what-is-ssl/">SSL(Secure Sockets Layer)이란 무엇입니까? | Cloudflare</a></li>
 <li><a href="https://feel5ny.github.io/2019/12/08/HTTP_014_02/">HTTPS의 세부사항 | 필오의 개발일지</a></li>
+<li><a href="https://www.acunetix.com/blog/articles/tls-security-what-is-tls-ssl-part-1/">TLS Security 1: What Is SSL/TLS | Acunetix</a></li>
+<li><a href="https://www.acunetix.com/blog/articles/history-of-tls-ssl-part-2/">TLS Security 2: A Brief History of SSL/TLS | Acunetix</a></li>
+<li><a href="https://www.acunetix.com/blog/articles/tls-ssl-terminology-basics-part-3/">TLS Security 3: SSL/TLS Terminology and Basics | Acunetix</a></li>
+<li><a href="https://www.acunetix.com/blog/articles/tls-ssl-certificates-part-4/">TLS Security 4: SSL/TLS Certificates | Acunetix</a></li>
 <li><a href="https://www.acunetix.com/blog/articles/establishing-tls-ssl-connection-part-5/">TLS Security 5: Establishing a TLS Connection | Acunetix</a></li>
+<li><a href="https://www.acunetix.com/blog/articles/tls-vulnerabilities-attacks-final-part/">TLS Security 6: Examples of TLS Vulnerabilities and Attacks | Acunetix</a></li>
 <li><a href="https://dokydoky.tistory.com/463">HTTPS - 2. HTTPS의 Ciphersuite, Handshake, Key derivation</a></li>
 </ol>
 <div class="footnotes">
