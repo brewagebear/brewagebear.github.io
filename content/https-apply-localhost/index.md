@@ -119,7 +119,7 @@ HTTPS는 위와 같이 **연결 수립과정에서는 비대칭키를 활용**�
 
 
 2. minica로 `localhost` 인증서 발급 
-    + 명령어 : `minica -domains www.localhost,localhist -ip-addresses 127.0.0.1`
+    + 명령어 : `minica -domains www.localhost,localhost -ip-addresses 127.0.0.1`
 
 ![result-command](./1.png)
 
