@@ -92,6 +92,10 @@ SSL은 `POODLE` [^1] 혹은 `DROWN` [^2] 등의 취약점이 발생해서 쓰진
 
  `Server Hello` 단계에서도 내부적으로 세분화 된 단계들이 존재하나 이 부분이 궁금하다면 [TLS Security 5: Establishing a TLS Connection | Acunetix](https://www.acunetix.com/blog/articles/establishing-tls-ssl-connection-part-5/) 여기를 참고하자.
 
+ 위의 아티클은 시리즈 글인데 1~6까지 매우 내용이 좋았다. 
+
+ SSL/TLS의 역사 요약은 [A Brief History of SSL/TLS](https://www.acunetix.com/blog/articles/history-of-tls-ssl-part-2/)를 참고할 수 있으며, 위에서 언급한 취약점에 대응 방안은 [Examples of TLS Vulnerabilities and Attacks](https://www.acunetix.com/blog/articles/tls-vulnerabilities-attacks-final-part/)을 참고해보자.
+
 HTTPS는 위와 같이 **연결 수립과정에서는 비대칭키를 활용**하여 세션 키를 만든 후에 연결 수립이 완료된 후에는 이 **세션 키를 대칭키 암호화 형식**으로 주고 받는 식으로 보안성을 높였다.
 
 대략적으로 HTTPS에 알게되었으니 이제 진짜로 우리 로컬 서버에 HTTPS를 적용해보도록 하자.
@@ -239,8 +243,13 @@ server:
 1. [What happens in a TLS handshake? | SSL handshake | Cloudflare](https://www.cloudflare.com/ko-kr/learning/ssl/what-happens-in-a-tls-handshake/)
 2. [SSL(Secure Sockets Layer)이란 무엇입니까? | Cloudflare](https://www.cloudflare.com/ko-kr/learning/ssl/what-is-ssl/)
 3. [HTTPS의 세부사항 | 필오의 개발일지](https://feel5ny.github.io/2019/12/08/HTTP_014_02/)
-4. [TLS Security 5: Establishing a TLS Connection | Acunetix](https://www.acunetix.com/blog/articles/establishing-tls-ssl-connection-part-5/)
-5. [HTTPS - 2. HTTPS의 Ciphersuite, Handshake, Key derivation](https://dokydoky.tistory.com/463)
+4. [TLS Security 1: What Is SSL/TLS | Acunetix](https://www.acunetix.com/blog/articles/tls-security-what-is-tls-ssl-part-1/)
+5. [TLS Security 2: A Brief History of SSL/TLS | Acunetix](https://www.acunetix.com/blog/articles/history-of-tls-ssl-part-2/)
+6. [TLS Security 3: SSL/TLS Terminology and Basics | Acunetix](https://www.acunetix.com/blog/articles/tls-ssl-terminology-basics-part-3/)
+7. [TLS Security 4: SSL/TLS Certificates | Acunetix](https://www.acunetix.com/blog/articles/tls-ssl-certificates-part-4/)
+8. [TLS Security 5: Establishing a TLS Connection | Acunetix](https://www.acunetix.com/blog/articles/establishing-tls-ssl-connection-part-5/)
+8. [TLS Security 6: Examples of TLS Vulnerabilities and Attacks | Acunetix](https://www.acunetix.com/blog/articles/tls-vulnerabilities-attacks-final-part/)
+9. [HTTPS - 2. HTTPS의 Ciphersuite, Handshake, Key derivation](https://dokydoky.tistory.com/463)
 
 [^1]:[SSL 3.0의 취약점 "POODLE"이란?](https://herrymorison.tistory.com/entry/SSL-30%EC%9D%98-%EC%B7%A8%EC%95%BD%EC%A0%90-POODLE%EC%9D%B4%EB%9E%80)
 [^2]:[SSLv2 DROWN Attack(CVE-2016-0800) 취약점 분석 / 대응방안](https://www.hahwul.com/2016/04/07/hacking-sslv2-drown-attackcve-2016-0800/)
