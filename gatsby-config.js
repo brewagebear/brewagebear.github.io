@@ -40,17 +40,19 @@ module.exports = {
         resolveEnv: () => NETLIFY_ENV,
         env: {
           production: {
-            policy: [{ userAgent: '*' }],
+            policy: [{ userAgent: '*', allow: '/' }],
+            sitemap: "https://brewagebear.github.io/sitemap.xml",
+            host: "https://brewagebear.github.io",
           },
           'branch-deploy': {
             policy: [{ userAgent: '*', disallow: ['/'] }],
-            sitemap: null,
-            host: null,
+            sitemap: "https://brewagebear.github.io/sitemap.xml",
+            host: "https://brewagebear.github.io",
           },
           'deploy-preview': {
             policy: [{ userAgent: '*', disallow: ['/'] }],
-            sitemap: null,
-            host: null,
+            sitemap: "https://brewagebear.github.io/sitemap.xml",
+            host: "https://brewagebear.github.io",
           },
         },
       },
