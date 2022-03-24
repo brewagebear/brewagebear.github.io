@@ -17,7 +17,7 @@ categories: 개발 인프라
 
 제목과 같이 `MacOS` 환경에서 HTTPS를 적용하는 것이 주된 목표이고, 확인 절차는 간단하게 스프링 부트를 통해서 작업하였다. 
 
-# MacOS에서 로컬호스트 개발환경에 HTTPS 적용하기
+# MacOS에서 로컬 개발환경에 HTTPS 적용하기
 
 + STEP 1. HTTPS란?
     + STEP 1.1 HTTPS Handshake
