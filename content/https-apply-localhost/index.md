@@ -1,5 +1,5 @@
 ---
-title: Mac OS에서 로컬호스트 개발환경에 HTTPS 적용하기
+title: Mac OS에서 로컬 개발환경에 HTTPS 적용하기
 date: 2022-03-25 22:34:00 +0900
 tags: 
   - Java
