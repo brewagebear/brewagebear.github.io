@@ -139,7 +139,7 @@ HTTPS는 위와 같이 **연결 수립과정에서는 비대칭키를 활용**�
 
 결론은 `.pem` 으로도 충분하지만 우리가 내장 톰캣에 띄우기 위해서는 `.jks` 파일이 필요하므로 변환한다고 알아두면 될 것 같다.
 
-## STEP 2.2 openssl 및 keytool을 이용한 p12, jks인증서 발급
+### STEP 2.2 openssl 및 keytool을 이용한 p12, jks인증서 발급
 
 먼저 `.pem` 파일을 `.p12` 파일로 변환하고자 한다.
 
@@ -177,7 +177,7 @@ keytool -importkeystore -deststorepass [.jks 파일에 적용할 키 스토어 �
 
 ---
 
-## STEP 2.3 로컬호스트 환경 스프링부트에 HTTPS 적용 확인 
+### STEP 2.3 로컬호스트 환경 스프링부트에 HTTPS 적용 확인 
  
 스프링 부트 초기 설치는 생략하고, 의존성은 `boot-starter-web` 만 있어도 된다. 설정을 확인하자.
 
@@ -234,7 +234,7 @@ server:
 이번 포스팅은 간단하게 HTTPS와 HTTPS 핸드셰이크에 대해서 다룬 후에 실제 CA인증서를 발급 후에 이것을 톰캣에 띄우기 위해서 `.jks` 파일로 변환하여 띄운 후에 인증서 예외처리를 통해서 빨간 자물쇠가 안뜨게끔 해보았다.
 
 
-# STEP 3. REFERENCE
+## STEP 3. REFERENCE
 1. [What happens in a TLS handshake? | SSL handshake | Cloudflare](https://www.cloudflare.com/ko-kr/learning/ssl/what-happens-in-a-tls-handshake/)
 2. [SSL(Secure Sockets Layer)이란 무엇입니까? | Cloudflare](https://www.cloudflare.com/ko-kr/learning/ssl/what-is-ssl/)
 3. [HTTPS의 세부사항 | 필오의 개발일지](https://feel5ny.github.io/2019/12/08/HTTP_014_02/)
