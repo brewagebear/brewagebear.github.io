@@ -56,7 +56,7 @@ function Seo({ description, title }) {
           content: `website`,
         },
         {
-          name: `google-site-verfication`,
+          name: `google-site-verification`,
           content: `-oY-iUGqf8mx3Ffwau2HLZ6BOz8Dvzi7Ybk6tMy5ICA`,
         },
         {
