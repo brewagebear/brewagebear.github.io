@@ -1,14 +1,14 @@
 ---
-title: MacOS에서 로컬 개발환경에 HTTPS 적용하기
-date: 2022-03-25 22:34:00 +0900
+title: 자바 NIO의 동작원리 및 IO 모델
+date: 2022-04-06 00:05:00 +0900
 tags: 
   - Java
-  - Security
-  - Https
-  - Cryptography
+  - NIO
+  - Network
+  - OS
 emoji: 💻
 author: 개발한입
-categories: 개발 인프라
+categories: 개발 
 ---
 ```toc
 ```
