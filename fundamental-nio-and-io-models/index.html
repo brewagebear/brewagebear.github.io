@@ -173,7 +173,31 @@
 <p>여기서, 이전 포스팅에서 오류가 있던 점을 알 수 있었는데 나는 자바에서의 시스템 콜 호출순서가 아래와 같다고 설명하였다.</p>
 <p><code class="language-text">JVM -> JNI -> 시스템 콜 -> 커널 -> 디스크 컨트롤러 -> 커널 버퍼 복사 -> JVM 버퍼 복사</code></p>
 <p>하지만 그림으로 예시를 들었던 부분은 이러하였다.</p>
-<p><img src="./318E7954-F9A4-41DE-96E5-C73D07CF2623%203.png" alt="java-io-system-call"></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 58.333333333333336%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAMCAYAAABiDJ37AAAACXBIWXMAAAsTAAALEwEAmpwYAAACa0lEQVQoz+WR3UtTAQDFz70um5kv9oGBQV8+REiYYFGCb5EUvgQRPUXRi5CEkCSVFCSBISUSGSlirEJByMByzK9RhOTSpjLzuo/rPu7U7U7nvPvSdWJW0kt/QQd+D+fAOS8H9hkrnbNTXJwbOd9JYtbSXuaQvtEuTXDGNqapYzfzaEBmzJSTGzcKucn3gNafh+D0c8SNOsT7sMmGJLtcKdldlR8sgezIwiScEz17ZXmu1in76iS7q9oSom7ZfBy012yNmw/uJAlGzeLUNSDaC6S6geCCS1SU+QxVVUWQPE3yElPxKiaTZ9KFNwrR/imANpMF6COCXRDTeUyAjvSmO/A8AiLvILIhPTgHt8eLUCgEyC459d05x8/WaVrt7kF2ICcydKCo2vC4AA+1vK7ukh2RwaPF62vRxqWg52kisdYS1VbONQJCciB7nzaYvysQ0k74/cpZVVVLwPBibdXwUi/qxuWCFxOtHEDFjLnoiK5Jfot6x+j1zvtXOF5coS6tcGjYTJttmsnYcttKO04lTPpjKUvp4UAgODE5OclwOPwRbs8UyFHAwCxcoEgTMjkG4DWz9C/XtwMtQmSV+sV5zw2fbL3t9vhuqWqwNLWmYbEG4EXA6/UecjgchW63ez9cpEA2C3hClLfegdaXkZUyQneyawRoI7CHoP0BpB8EAThtgwiGiXVSiLQBvAv4/QocDgd8igJovUBDTz3KnhkEfgGSRuhjRjGDBPKbR3GvoxzxV8Dq+NVtq+bC3V9JYcXbv3ESpy8jZGuCz+cTJEkSFUURkDBik/gv9AkjMv7Of7MlYUTuH/9P/X+DPwHRdNpqoyqCPAAAAABJRU5ErkJggg=='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="java-io-system-call"
+        title="java-io-system-call"
+        src="/static/7ab2cc18cc7299ab13feb259a7ee9a94/37523/2.png"
+        srcset="/static/7ab2cc18cc7299ab13feb259a7ee9a94/e9ff0/2.png 180w,
+/static/7ab2cc18cc7299ab13feb259a7ee9a94/f21e7/2.png 360w,
+/static/7ab2cc18cc7299ab13feb259a7ee9a94/37523/2.png 720w,
+/static/7ab2cc18cc7299ab13feb259a7ee9a94/302a4/2.png 1080w,
+/static/7ab2cc18cc7299ab13feb259a7ee9a94/07a9c/2.png 1440w,
+/static/7ab2cc18cc7299ab13feb259a7ee9a94/772aa/2.png 2042w"
+        sizes="(max-width: 720px) 100vw, 720px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>즉, NIO에서는 위의 플로우가 맞지만, Blocking I/O에서는 (NIO를 제외한 나머지가 모두 Blocking I/O이다.) 데이터가 커널영역에 있는 버퍼로 전송되고, 다시 또 이 버퍼의 값을 JVM의 버퍼로 옮기는 이중 작업이 발생하였다고 했다.</p>
 <p>따라서, 명확히하자면 아래와 같이 수정하는 것이 맞다고 본다.</p>
 <p><code class="language-text">JVM -> 시스템 콜 -> 커널 -> 디스크 컨트롤러 -> 커널 버퍼 복사 -> JVM 버퍼 복사 </code></p>
@@ -186,7 +210,27 @@
     <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token class-name">DirectByteBuffer</span><span class="token punctuation">(</span>capacity<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre></div>
 <p>즉 리턴 할 때 <code class="language-text">DirectByteBuffer</code> 를 생성해주는데 이 녀석을 보면 아래와 같이 <code class="language-text">MappedByteBuffer</code> 를 상속받는 놈임을 확인 할 수 있다.</p>
-<p><img src="./Screen%20Shot%202022-04-01%20at%2022.39.56%203.png" alt="MappedByteBuffer"></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 321px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 103.8888888888889%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAVCAYAAABG1c6oAAAACXBIWXMAAAsTAAALEwEAmpwYAAACoUlEQVQ4y81Ta2/aQBDkj1D77nx+nDm/zrwCpEASUiyS0CQ0oKQvqrSV2qpS/7801Z0hkEJaqeqHfhjt3loaz+7OVjh3YVMGizJUCUXVJrAIheM4YIyBUvoIusY5N9/3oaJkiNNmil4aoWgrTNo5BiqGCAJIKVGv15HnObJMmRiGNUP6JKEUPg6zGCeNBJe9Ot6ddDBuZQh83xA2GzmUUlBZZghVlsB1HaOS8z2EoZAYtMc4G87Rb09x/DzD/LyJ66KBWVHH50UXy1kbr6ctfL3rYX7WwP1NF/2DCITutl8J/ABSRFBxHZnMIUMfKhFIowBZLJCnIRpZiDwVaOU1COEhiQKEwjMEpVIOZ6W24roclOmBE9jUgk1sWPYKxMazZ8TAsiiqVQJL5zaFZRFQwmBbFIToZTlmBBXXdcGdUnYY1JBKhURmSCOFOEzROEig6hFkLKAaETr9HHEaotXNkCqJdk8hyyP4gbdW6BrJhNo47hSYjd7g6uQOi2KJ4vAK48se7n+8xO2nAq/en+LtlzNc3Axx+7HAdD7E5LqP6eLI/IwSWhKuZ2F8x0gJSsAYBbH1OJj5plvTbeq3rrNVLFtmm5bXG1oPeD+cP9YeWn7KpH+DHUK9IL4d1z7j5RbXcRu/JdzF5sy0NR4iK+OvZ/iI0OXlxtdRw3O9sua5xho6930P3uotQh/ay5sZ6oQ5IJRg0BphOf2G6dHCxMV4iavRHYatMSazQ0znR7iYD3F+M8Dy+4WxzPzDC4wmHbN5TVrxhYAXCCM98AUSqYzBZRijJiSEH5p6IDwEwjeKdF6TgVHp+aXSh0tJmgdI2l1QYhvJpf+YOUftQ+awElszM5GuZreq84db9jzwLXPvhcP3bJdvtsx3lsIeFf+pD/87wp9IH3QRSyp7cQAAAABJRU5ErkJggg=='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="MappedByteBuffer"
+        title="MappedByteBuffer"
+        src="/static/1ad6d5f22b7e227de8b194dc850ded23/30592/3.png"
+        srcset="/static/1ad6d5f22b7e227de8b194dc850ded23/e9ff0/3.png 180w,
+/static/1ad6d5f22b7e227de8b194dc850ded23/30592/3.png 321w"
+        sizes="(max-width: 321px) 100vw, 321px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>따라서, <code class="language-text">ByteBuffer</code> 를 사용하면 우리가 이전 시간에 말했던 <code class="language-text">MMIO</code> 와 <code class="language-text">가상메모리</code> 의 장점을 갖게되고 보다 빠르게 읽고 쓰기가 가능해진다.</p>
 <p>여기서 또 한가지 궁금증이 생길 수 있다.</p>
 <p>그렇다면 <strong>이 시스템 메모리를 어떻게 자바에서 사용가능한가</strong>이다.</p>
@@ -231,7 +275,31 @@
 <p>따라서, 일반적으로 성능에 민감하고 버퍼를 오랫동안 유지해서 사용할 필요가 있을 경우에는 다이렉트 버퍼를 사용하고, 그 외에는 논 다이렉트 버퍼를 사용한다.</p>
 <p>다이렉트 버퍼와 논 다이렉트 버퍼의 차이는 친절하게 자바 스펙에 나와있으니 참고해보자. <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/ByteBuffer.html">ByteBuffer (Java SE 11 &#x26; JDK 11 )</a></p>
 <h2 id="step-2-channel" style="position:relative;"><a href="#step-2-channel" aria-label="step 2 channel permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 2. Channel</h2>
-<p><img src="./A4E31D91-FF77-40B7-BC47-D03AC22EF297%203.png" alt="Channel"></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 27.22222222222222%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAFCAYAAABFA8wzAAAACXBIWXMAAAsTAAALEwEAmpwYAAABOklEQVQY033KsUrDUBjF8WNpUXG0TvYhdHHpWFyddHIUt76Ajr6Fq4OIg4gIph3UEhUE6VBTpIkpubmJjSEVbJsYe3PvJx0EQXH4Lf9z4DgOGUabTNMk3/d3OOdgjOUrlQr+Y9t2njE2+VZN06JHo02ccwL3/CPHfjr1OKsHQW/N5S9QRAUiyn1jjOWCIMj9bFKqgt3l4J63ypznGusa569hdIzW3QHoCtNnDwT/ZhtE9ItlWXBd948tAbvcxH6DQBeYe24eArQLDGrF0khfKZ0AU/GwvyVE1hJCXGdZpidJoodhqEdRpKdpqk+aEKIxFqI5eu+tE4BBY7k0rC8s0gaATw1INcyM78vzZQAfo7c9KRVJmY2VUhTHMXU6HbIsi5IkIaWUklKKLJOUDKNqnwjp7VIx1TCbasAXMjYPhQ3eZdoAAAAASUVORK5CYII='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="Channel"
+        title="Channel"
+        src="/static/d4763f82fca7edd5e8b681503d5174ce/37523/4.png"
+        srcset="/static/d4763f82fca7edd5e8b681503d5174ce/e9ff0/4.png 180w,
+/static/d4763f82fca7edd5e8b681503d5174ce/f21e7/4.png 360w,
+/static/d4763f82fca7edd5e8b681503d5174ce/37523/4.png 720w,
+/static/d4763f82fca7edd5e8b681503d5174ce/302a4/4.png 1080w,
+/static/d4763f82fca7edd5e8b681503d5174ce/07a9c/4.png 1440w,
+/static/d4763f82fca7edd5e8b681503d5174ce/820f7/4.png 2126w"
+        sizes="(max-width: 720px) 100vw, 720px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>채널은 스트림과 상당히 유사하지만 채널이 <strong>스트림의 확장이나 발전된 형태는 아니다.</strong> 일종의 게이트웨이라 볼 수 있는데 단지 기존의 파일이나 소켓 등에서 사용하던 스트림을 네이티브 IO 서비스를 이용할 수 있도록 도와주는 메서드를 제공한다.</p>
 <p>스트림과 차이점을 위주로 설명해보자면 (여기서 스트림은 자바 8의 스트림 API가 아닌 FileInputStream과 같은 스트림을 의미한다.)</p>
 <ol>
@@ -315,7 +383,31 @@
 <p>같은 파일채널 인스턴스에 대해 여러 쓰레드들이 동시에 메서드를 호출해도 동기화 문제가 발생하지 않는다.</p>
 <p>이게 가능한 이유는 여러 쓰레드가 접근했을 때 만약 한 쓰레드가 파일 크기 또는 파일채널의 포지션을 변경하는 부분을 수행하는 메서드를 호출하면 다른 쓰레드들은 해당 작업을 마무리할 때까지 기다렸다가 수행하기 때문이다.</p>
 <p>이 부분은 자바 공식문서에도 친절하게 설명되어있다.  <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/channels/FileChannel.html">FileChannel (Java SE 11 &#x26; JDK 11 )</a></p>
-<p><img src="./Screen%20Shot%202022-04-03%20at%2017.37.09%203.png" alt="FileChannel-Thread"></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 4.444444444444445%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAABCAYAAADeko4lAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAMElEQVQI103Iuw0AMAxCwew/KLjxZwMsp3BSPJ3gkBQAjTczubsyc4ux6u2Itb5/at9ES3DFDkLlAAAAAElFTkSuQmCC'); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="FileChannel-Thread"
+        title="FileChannel-Thread"
+        src="/static/0c858989bbb20c74a1232c7a42ed088e/37523/5.png"
+        srcset="/static/0c858989bbb20c74a1232c7a42ed088e/e9ff0/5.png 180w,
+/static/0c858989bbb20c74a1232c7a42ed088e/f21e7/5.png 360w,
+/static/0c858989bbb20c74a1232c7a42ed088e/37523/5.png 720w,
+/static/0c858989bbb20c74a1232c7a42ed088e/302a4/5.png 1080w,
+/static/0c858989bbb20c74a1232c7a42ed088e/07a9c/5.png 1440w,
+/static/0c858989bbb20c74a1232c7a42ed088e/2093e/5.png 1858w"
+        sizes="(max-width: 720px) 100vw, 720px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>이제 파일채널의 중요한 속성들을 알아보고자 한다.</p>
 <h4 id="step-222-filechannel의-속성" style="position:relative;"><a href="#step-222-filechannel%EC%9D%98-%EC%86%8D%EC%84%B1" aria-label="step 222 filechannel의 속성 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 2.2.2 FileChannel의 속성</h4>
 <ol>
@@ -355,7 +447,28 @@
 </ol>
 <p>MMIO를 이전 포스팅에서 설명했었다. 파일 채널은 이를 지원을 한다.
 추상 메서드인 <code class="language-text">map()</code> 을 통해서 처리가 된다.</p>
-<p><img src="./Screen%20Shot%202022-04-03%20at%2017.48.41%203.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 692px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 24.444444444444443%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAFCAYAAABFA8wzAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA6klEQVQY04WPy3KDMAxF8ytYYGzeNuaZBDqTLNJ9//9XTgeTtssujjSS7lxJl+ADvQ+EfmAII947yspSlCZiC0NuLLawVEWGNRqTa7IsQ0QhqSCSkqZp7F32+UnoRq7DzuQ2pnXg/hzZHifL3dGGlf3jwdfnymvreU2e0NYYU1JZS2UNmdbR9HKEpuyoixrfGlxj8K3F5DlKnduPS2xesPiNq2u4uZq+qZj8jdUFVt+ijT0NtdYM3czkF9ahYlsa7nNN3ZTI+42DQ6wkIRGJqMhRKxIlfy//CJVK4iBJJGYReRtlv+L/OC78BrKjlmBXiowrAAAAAElFTkSuQmCC'); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="6"
+        title="6"
+        src="/static/5db2e37b531a25bf722d4f2513dd2390/91e7e/6.png"
+        srcset="/static/5db2e37b531a25bf722d4f2513dd2390/e9ff0/6.png 180w,
+/static/5db2e37b531a25bf722d4f2513dd2390/f21e7/6.png 360w,
+/static/5db2e37b531a25bf722d4f2513dd2390/91e7e/6.png 692w"
+        sizes="(max-width: 692px) 100vw, 692px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>이때 인자를 보면 <code class="language-text">MapMode</code> 객체를 받는 것을 확인할 수 있는데 이 객체는 세가지 상수 값을 갖는다.</p>
 <ol>
 <li><code class="language-text">READ_ONLY</code> : 버퍼에서 읽기만 가능한 모드</li>
@@ -394,23 +507,125 @@
 <ul>
 <li>파일의 크기와 같은 버퍼 사용 시 파일 복사 속도</li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-03%20at%2018.00.02%203.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 391px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 17.22222222222222%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAADCAYAAACTWi8uAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAjklEQVQI102NWwqDQAxF3YuOdh7+Val13gpiHXD/q7klaQU/Drk3hJPqISWew4B123ha75HXFWlZGBcCnPcIKXF/WwutNZRSEEJAGwMpJeemaVCZvmfJpxRY5zD/2fYdr2li+TCOPGdr+UHMGftxsLScJ3yM6LruJyQzUdc1Q7ltW1x7ynRI3G+vfs8k/AJBRV7tuSw6HAAAAABJRU5ErkJggg=='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="7"
+        title="7"
+        src="/static/59a9f0cd4b32008b91a5ae60a216d3ce/14e0c/7.png"
+        srcset="/static/59a9f0cd4b32008b91a5ae60a216d3ce/e9ff0/7.png 180w,
+/static/59a9f0cd4b32008b91a5ae60a216d3ce/f21e7/7.png 360w,
+/static/59a9f0cd4b32008b91a5ae60a216d3ce/14e0c/7.png 391w"
+        sizes="(max-width: 391px) 100vw, 391px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <ul>
 <li>메모리 매핑 사용 시 파일 복사 속도</li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-03%20at%2018.00.48%203.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 346px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 23.333333333333332%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAFCAYAAABFA8wzAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA7UlEQVQY022QaW6DQAyFuUhmYVMRMFN2EhCBUESoQKRK7n+VV42rVFHVH5Ytz/j5fbbeggBZnqMoS0RxjLbrcGpbpFmGoqqQFwWCIIDruvA8D77vU/5bP98tpRROTYPtdsN7kuDr8cCyrpjmGeu+Ux2GIThjkFJSdhyHgjEG27apfopaWmv0lwu6vsfHPGOcJnI5jCP1y7pGfTz+OG8aTNcrYqWgtKZlhiyMol9RK0lTGt7vd/rwuW00NC8LzsNAgmVV0RnMaUzfiJkwBsxJoldBY1lwDnY4EIIJzjmhCSEI05YSUgjCe0Xm/yB/AwJXnH+VxiLnAAAAAElFTkSuQmCC'); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="8"
+        title="8"
+        src="/static/93bdb191867502bcc4e2a1e9abdc11d7/8f77f/8.png"
+        srcset="/static/93bdb191867502bcc4e2a1e9abdc11d7/e9ff0/8.png 180w,
+/static/93bdb191867502bcc4e2a1e9abdc11d7/8f77f/8.png 346w"
+        sizes="(max-width: 346px) 100vw, 346px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <ul>
 <li>논 다이렉트 바이트 버퍼 사용 시 파일 복사 속도</li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-03%20at%2018.01.56%203.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 395px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 18.333333333333336%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAECAYAAACOXx+WAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAyUlEQVQY02WP246DMAxE+RcICrmU0oVWkIRw27AgVlWl/v+vTBX3ZVd9GFkaj4/tpCxLdNaiulRouw6dMXDeox8GWOfgxxHGObTG4Na21P+qazDGkGXZh5JzVWGYJtRNg957AvzsO5YQMC0LyfY9LZlDIMVsBDL2hvyFJ8ZabMeBZV0Rto2AcTh6+++B434nr7leMc4z9b7XFUopPJ5P+kSfTkjTlMAJ55wMqRSklFSFENBak5TWEFIg5oqioBq9PM8hpAQv+L8LX6+NgRtOsRWsAAAAAElFTkSuQmCC'); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="9"
+        title="9"
+        src="/static/b872e5bf2d2cb4e63e9604910c4ce7ca/2cb6c/9.png"
+        srcset="/static/b872e5bf2d2cb4e63e9604910c4ce7ca/e9ff0/9.png 180w,
+/static/b872e5bf2d2cb4e63e9604910c4ce7ca/f21e7/9.png 360w,
+/static/b872e5bf2d2cb4e63e9604910c4ce7ca/2cb6c/9.png 395w"
+        sizes="(max-width: 395px) 100vw, 395px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <ul>
 <li>다이렉트 바이트 버퍼 사용 시 파일 복사 속도</li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-03%20at%2018.02.44%203.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 355px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 25%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAFCAYAAABFA8wzAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA5ElEQVQY002Q746CMBDEfZTSFkj4Qj3wPP7qHYoF9C4Q4/u/yVx2IsYPk3S33d92ZmOthTUGgVLQWiMIAiilKOm91+pZv2vtCScMQ2yiKILbbuHHEWVd47vrMF6vGETThK7vMd5u1O88885PE86XC35OJ/bb4xFxHBNKYJqmqJsGH1lGaFlVaA4HKt/tULctzzKY5Tmcc6zl7ed+j9Q5CIdAIX8VBfph4Obl8cDfsmC+37ldYKKiLHH2Hr33HBZHRVUhSRLaFru0zAytZQ6S4ao1I2MMjNaUfr6RwVduUfSCyQ//AbUTnbsyh+LmAAAAAElFTkSuQmCC'); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="10"
+        title="10"
+        src="/static/4e2442aa327297ed3184b555dbd1b7f4/526ee/10.png"
+        srcset="/static/4e2442aa327297ed3184b555dbd1b7f4/e9ff0/10.png 180w,
+/static/4e2442aa327297ed3184b555dbd1b7f4/526ee/10.png 355w"
+        sizes="(max-width: 355px) 100vw, 355px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <ul>
 <li>채널 직접 전송 시 파일 복사 속도</li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-03%20at%2018.03.23%203.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 331px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 20%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAECAYAAACOXx+WAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAu0lEQVQY012P2w6CMBBE+RegISRyUasIPshFLSo3AR/8//8YMxtJjA+bzuy2Z6eWUgrxeo1H1+Fa1zikKZ7zLL4dBund2xb9OOLeNMjLUjznZ2PA97Ztw3EcuK4Ly1UKvu9jqzX2SYIwDEVnxyP0boeN1ki/mn0uT7NMfBRFWAUBPM8TMKEWDUG3pkE/TbKdKbmdKVgXYwTKO5wx+akoBPR6v5FXFaI4lqQWqaQz7nKyt3zhVy9+0f/FhB+/bII6CkZxYgAAAABJRU5ErkJggg=='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="11"
+        title="11"
+        src="/static/c244095cfee3daa7ca33e5d22ffe98e2/62452/11.png"
+        srcset="/static/c244095cfee3daa7ca33e5d22ffe98e2/e9ff0/11.png 180w,
+/static/c244095cfee3daa7ca33e5d22ffe98e2/62452/11.png 331w"
+        sizes="(max-width: 331px) 100vw, 331px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>이를 통해서 채널 직접 전송 시 파일 복사 속도는 메모리 매핑을 사용하는 것보다 조금 나은 성능을 갖는다고 알 수 있다.</p>
 <p>500MB 파일을 복사하는 것으로 예제 코드를 짰으며, 전체 코드는 <a href="https://github.com/brewagebear/blog-example/tree/main/nio-example/src/main/java/nio_copy">blog-example/nio-example</a>  이곳을 참고해보자.</p>
 <h3 id="step-23-socketchannel" style="position:relative;"><a href="#step-23-socketchannel" aria-label="step 23 socketchannel permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 2.3 SocketChannel</h3>
@@ -436,7 +651,29 @@ socketChannel<span class="token punctuation">.</span><span class="token function
 <p>요즘 날 네트워크 프로그래밍을 하다보면 나오는 개념 중에 하나가 바로 이벤트 주도 아키텍처(Event-driven Architecture)<sup id="fnref-2"><a href="#fn-2" class="footnote-ref">2</a></sup>일 것이다. 리액터 패턴도 그 아키텍처의 구성요소 중에 하나인데, 이 패턴은 이벤트 중심의 어플리케이션이 하나 이상의 클라이언트로부터 하나의 어플리케이션으로 동시에 전달되는 서비스 요청들을 나눠 각 요청에 상응하는 서비스 제공자에게 구별해서 보내준다.</p>
 <p>좀 더 깊게 설명하면, 클라이언트들의 모든 요청을 앞단의 큐에 저장하고 큐를 모니터링하는 스레드에 이벤트를 보낸다. 그러면 큐를 모니터링하는 스레드는 큐에 저장된 요청을 적절한 로직으로 보내서 해당 요청을 처리하게 한다.</p>
 <p>어? 이거 어디서 본 방식 같은데라고 생각할 수 있다. 이러한 방식을 채택해서 개발자에게 제일 친숙한 것이 바로 <strong>Node.js의 이벤트 루프(Event Loop)</strong><sup id="fnref-3"><a href="#fn-3" class="footnote-ref">3</a></sup> 이다.</p>
-<p><img src="./eventloop%203.webp" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 69.44444444444444%; position: relative; bottom: 0; left: 0; background-image: url('data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAADQAwCdASoUAA4APtFUo0uoJKMhsAgBABoJaQAAXGU1AL3KJ4iU3AAA/vYPcBdu2cRzcPuSL7jJS8hwClhOvNsdMVUsAAAA'); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="eventloop"
+        title="eventloop"
+        src="/static/95ba89d455553b0c3201f80fac7a2670/bc514/eventloop.webp"
+        srcset="/static/95ba89d455553b0c3201f80fac7a2670/59d6e/eventloop.webp 180w,
+/static/95ba89d455553b0c3201f80fac7a2670/a3012/eventloop.webp 360w,
+/static/95ba89d455553b0c3201f80fac7a2670/bc514/eventloop.webp 720w,
+/static/95ba89d455553b0c3201f80fac7a2670/d00b9/eventloop.webp 800w"
+        sizes="(max-width: 720px) 100vw, 720px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>이 또한, 따로 찾아보기를 권장하며 (범위를 벗어나기에) 우리가 중점으로 두어야할 내용은 이벤트 주도 아키텍처에서 리액터 패턴이라는 것이 존재하고, 셀렉터는 바로 이 리액터 패턴을 구성하는 요소 중에 리액터를 담당하는 놈이라고 이해하면된다.</p>
 <p>즉, 여러 <code class="language-text">SelectableChannel</code> 의 <code class="language-text">SelectionKey</code>를 자신에게 등록하게 하고 등록된 <code class="language-text">SelectableChannel</code> 의 이벤트 요청들을 나눠서 적절한 서비스 제공자에게
 보내 처리하는 것이다.</p>
@@ -483,28 +720,7 @@ socketChannel<span class="token punctuation">.</span><span class="token function
 <h3 id="step-32-비블록킹-모델과-셀렉터-동작원리" style="position:relative;"><a href="#step-32-%EB%B9%84%EB%B8%94%EB%A1%9D%ED%82%B9-%EB%AA%A8%EB%8D%B8%EA%B3%BC-%EC%85%80%EB%A0%89%ED%84%B0-%EB%8F%99%EC%9E%91%EC%9B%90%EB%A6%AC" aria-label="step 32 비블록킹 모델과 셀렉터 동작원리 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 3.2 비블록킹 모델과 셀렉터 동작원리</h3>
 <p>위에서 왜 비블록킹 모델이 탄생했는지 알아보았다.
 이러한 모델을 만들기위한 핵심적인 기능들은 크게 세가지로 볼 수 있다.</p>
-<p><span
-      class="gatsby-resp-image-wrapper"
-      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 500px; "
-    >
-      <span
-    class="gatsby-resp-image-background-image"
-    style="padding-bottom: 51.66666666666666%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAKCAYAAAC0VX7mAAAACXBIWXMAABcSAAAXEgFnn9JSAAABYElEQVQoz42R24rCQAyG5/0fzasiCBUPtcUDta09Wq06yfJlGZHFiw2EdDLpf8i4y+Wi6/Val8ulLhYLTZJE27bV/8T1etUsy3S73WpZlvp4PNTVda23203v97s1pmnSpml0HEfrkXwzRw2zfd/r6XTSzWajURTZPQQOhvl8bkx5nuv5fNb9fm8qAWBoGAY7A/R6vfT5fBp5lmZaVZX1mIPEAZKmqclerVYmHTaG/kZRFAYaQkTsTB8S7706mgRWyBAMoJr9QsYqgl3IUIiDrusMkMo/b0AssbsQ2OTBqCjGGqA4CPboxXGss9lMj8fj7w5hAgglWAYA6Shhl6wjDEMeHg5V9AGGGAyI3TRNUhSFtG0rwzBIVVVS17V953kucRzbnfceK+8kuq6z7PtemqaRcRzF4Xu321nCwi7C4lHK/ecjfOa3cN776HA4REmSWJZlGYlIpKrv5Bx6n/Vb/gARJf1j8usPxQAAAABJRU5ErkJggg=='); background-size: cover; display: block;"
-  ></span>
-  <img
-        class="gatsby-resp-image-image"
-        alt="68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67"
-        title="68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67"
-        src="/static/79186cf8d8dfac4223e4bb8e4995dbed/0b533/68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67.png"
-        srcset="/static/79186cf8d8dfac4223e4bb8e4995dbed/e9ff0/68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67.png 180w,
-/static/79186cf8d8dfac4223e4bb8e4995dbed/f21e7/68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67.png 360w,
-/static/79186cf8d8dfac4223e4bb8e4995dbed/0b533/68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67.png 500w"
-        sizes="(max-width: 500px) 100vw, 500px"
-        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
-        loading="lazy"
-        decoding="async"
-      />
-    </span></p>
+<p><img src="./68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67.png" alt=""></p>
 <ol>
 <li>
 <p><code class="language-text">Selector</code>  : 리액터 패턴에서 리액터 역할을 해주는 객체</p>
@@ -536,8 +752,54 @@ socketChannel<span class="token punctuation">.</span><span class="token function
 <p>앞에서 말한 바와 같이 이 <strong>클래스를 상속받은 클래스</strong>만이 셀렉터에 등록이 될 수 있다하였다.</p>
 <p>우리가 살펴 볼  <code class="language-text">SelectableChannel</code> 의 기능은 2가지인데 첫 번째는 소켓채널에서 본 논블록킹 모드 활성화 기능이고 두 번째는 어떻게 셀렉터에 등록하느냐이다.</p>
 <p>첫 번째의 경우에는 소켓채널에서 알려줬으니 두 번째 기능을 알아보고자 한다.</p>
-<p><img src="./Screen%20Shot%202022-04-05%20at%2015.18.45.png" alt="">
-<img src="./Screen%20Shot%202022-04-05%20at%2015.19.13.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 11.666666666666666%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAACCAYAAABYBvyLAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAYklEQVQI12XJ0QrCMBBE0f5JFpLZTROrYqG2//9hV5IXBR8Oc2GWbX3w2nbOo3G9G8d+p/eKe0alEHW0EzE2kITcJ4+YZsuJkllcosaNaE+6i6rMGo2SCymlP/bbZt/PBuMDXkQ5ZcUZn2UAAAAASUVORK5CYII='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="12"
+        title="12"
+        src="/static/7ff2a48197addffe3bdf32c69ec437b1/37523/12.png"
+        srcset="/static/7ff2a48197addffe3bdf32c69ec437b1/e9ff0/12.png 180w,
+/static/7ff2a48197addffe3bdf32c69ec437b1/f21e7/12.png 360w,
+/static/7ff2a48197addffe3bdf32c69ec437b1/37523/12.png 720w,
+/static/7ff2a48197addffe3bdf32c69ec437b1/302a4/12.png 1080w,
+/static/7ff2a48197addffe3bdf32c69ec437b1/ee515/12.png 1269w"
+        sizes="(max-width: 720px) 100vw, 720px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span>
+<span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 5.555555555555555%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAABCAYAAADeko4lAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAQElEQVQI1z3DQQqAMAxFQe+i1eSnJWChCvX+13ruOjBbqjPyYb6Nb1Z6v1ET8gO5UNTVzDF3FLGaCZ0XGQUrOz/DEB47YriwwgAAAABJRU5ErkJggg=='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="13"
+        title="13"
+        src="/static/7255d8edf94db20e7c6611b147f63006/37523/13.png"
+        srcset="/static/7255d8edf94db20e7c6611b147f63006/e9ff0/13.png 180w,
+/static/7255d8edf94db20e7c6611b147f63006/f21e7/13.png 360w,
+/static/7255d8edf94db20e7c6611b147f63006/37523/13.png 720w,
+/static/7255d8edf94db20e7c6611b147f63006/302a4/13.png 1080w,
+/static/7255d8edf94db20e7c6611b147f63006/bed7a/13.png 1437w"
+        sizes="(max-width: 720px) 100vw, 720px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>위 두개의 <code class="language-text">register()</code> 메서드를 통해서 채널을 셀렉터에 등록을 할 수 있다.
 세번째 인자인 <code class="language-text">Object att</code> 는 <code class="language-text">SelectionKey</code> 를 다룰 때 설명하고자 한다.</p>
 <p>여기서 <code class="language-text">ops</code> 는 이벤트의 모드라고 볼 수 있다. <code class="language-text">Selector</code>에 등록할 수 있는 이벤트 모드들은 4가지가 있다.</p>
@@ -548,7 +810,28 @@ socketChannel<span class="token punctuation">.</span><span class="token function
 <li><strong>OP_ACCEPT</strong> : 클라이언트가 서버에 접속했을 때 발생하는 이벤트</li>
 </ol>
 <p>위의 이벤트들은 <code class="language-text">SelectionKey</code>에 상수로 등록되어있다.</p>
-<p><img src="./Screen%20Shot%202022-04-05%20at%2015.23.28.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 649px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 116.1111111111111%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAXCAYAAAALHW+jAAAACXBIWXMAAAsTAAALEwEAmpwYAAAC/0lEQVQ4y31U23LbOAz1jzSSSEmkeNXNsmwnzibT7vQ2ndmH/v+nnC0gUSOnTR/OgBApEMTBwUGpGlopqLpGXVVslVLQWjOapkFZliiKYoMQxZ2fkOc5DjZEtKczbNvB9SPDWMuBCMYYthSc1vuL0ndCVVVLwDAcMT49o51mjI/P6M+PcM4jhIC2bdnGGNnuQd/2+845zvJQ1yW0qqA1Pb2GaTSUVgx+Wp5DCoGqrvnphJrKs4IyI0gplwzHMCPYDq0b0Llxg1MBx2nG66ePmOYzSimXJ9cVHrKMf87zZBdwhqHp0NQWRjmGrgys8lBVgxAipnlG7DrOjGqlaqrVX0gRskApBaQsIEUBKQWEFChLyWs+mGXIsgwPDw9s91ndZ5jj4GKL7ngCWdf28F3PpFhrGd4v68RyYjcxnNZUT87QdQO66w1+nNBenhBPFxhj+ecUlEA+Mbn/Tr61ZruQa0iN3fBNGtY0aLTasknY9+Q+U6orsZvAAR+HV/RuwjGcGYOfMcUrWjPg9vyC/37+xL/fvrGarPfw1qIoxLt1PAgh3mWM9v60/14wDkjapYamdqirki1lQ09Sq00+PTdd8Pai5B9c16O/PMEPR4TpjDDNsNZt9UvFp4CJHFq/JYhYXgN26C9X+GFEN58RpxOcd4gx8EEmYw1ALUTatcyu3S5Ng2EZDk2AVRZWW5ja8NqbCKMtum7A6Tzj8XZDiJFLQAGoM+jnfZNTU3NjH8MFvmkRzcAgKbZ2ZPkdpxOeX1/x5ft3+BB5VlKPqrWJfyczx6EQ+TJVxDI4l3XO8qMDLLkPH5aiC/FGfhljn+mBhqkPgW9ujL0jZCu+NQzyq93ISqjX0cakkOTGl4+I8wX90z9orzc40q8xTEIiw+z8pPEE2tuUopud6M3Saxu7q9T2AyHpljJLA/eusZ31PMK985CSDlSoygqlLLfnKK1RrlN5P533g5UVRKRc+xfQ1J7iBYM7bbomtm+3F3z68hlff/zgOlNgspWUyO5YXoP/Cvg/T0+lb6LIPdkAAAAASUVORK5CYII='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="14"
+        title="14"
+        src="/static/8607adf991b7d6f8d4211a59d3a1bdae/7762d/14.png"
+        srcset="/static/8607adf991b7d6f8d4211a59d3a1bdae/e9ff0/14.png 180w,
+/static/8607adf991b7d6f8d4211a59d3a1bdae/f21e7/14.png 360w,
+/static/8607adf991b7d6f8d4211a59d3a1bdae/7762d/14.png 649w"
+        sizes="(max-width: 649px) 100vw, 649px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>그래서 아래와 같은 코드로 채널을 셀렉터에 등록할 수 있다.</p>
 <div class="gatsby-highlight" data-language="java"><pre class="language-java"><code class="language-java"><span class="token comment">// 셀렉터 생성</span>
 <span class="token class-name">Selector</span> selector <span class="token operator">=</span> <span class="token class-name">Selector</span><span class="token punctuation">.</span><span class="token keyword">open</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -616,9 +899,30 @@ channel2<span class="token punctuation">.</span><span class="token function">reg
     <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>key<span class="token punctuation">.</span><span class="token function">channel</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> key<span class="token punctuation">.</span><span class="token function">interestOps</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre></div>
 <p>결과를 살펴보면 아래와 같다.</p>
-<p><img src="./Screen%20Shot%202022-04-05%20at%2016.00.29.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 381px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 23.333333333333332%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAFCAYAAABFA8wzAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA20lEQVQY002Q2Q6CMBRE+RDCkoiGF9la9hbKIur//8+YuRHjw6SdtD0zt96y76jbFm3fiwZjxHfDgMk5mGmCW1fM64r9+QTv03N9vF4YrEU/jkjTFGEYwhutRVGWKKtKpJtGvKprAVdaywOKnoEM5p7KigL3LMMlSRBFETwmNV0nl9iKD05v5xlu26TpdhywzmFaFhzvN+55jjiO4fs+giAQGL1HQKmUNFFaS0M25Z5gnvfGCOxsyoAsz3G93X4gShryj/6BMqZSMvLZWppbKwEE2i8w+Y55AtnwAzrUomxaz2oZAAAAAElFTkSuQmCC'); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="15"
+        title="15"
+        src="/static/888e1099081d525df6440c2e8fc5e7cc/2add2/15.png"
+        srcset="/static/888e1099081d525df6440c2e8fc5e7cc/e9ff0/15.png 180w,
+/static/888e1099081d525df6440c2e8fc5e7cc/f21e7/15.png 360w,
+/static/888e1099081d525df6440c2e8fc5e7cc/2add2/15.png 381w"
+        sizes="(max-width: 381px) 100vw, 381px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>그림으로 보면 다음과 같을 것이다.</p>
-<p><img src=".AC194916-DA9B-4690-9652-92D95746040D.png" alt=""></p>
+<p><img src="./AC194916-DA9B-4690-9652-92D95746040D.png" alt=""></p>
 <p>셀렉터는 이렇게 이벤트가 발생한 채널들만 선택해서 각 이벤트에 맞는 동작을 하도록 모든 이벤트들에 대한 컨트롤러 역할을 한다.</p>
 <h4 id="step-322-selectionkey" style="position:relative;"><a href="#step-322-selectionkey" aria-label="step 322 selectionkey permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 3.2.2 SelectionKey</h4>
 <p>어떤 채널이 어떤 <code class="language-text">Selector</code>에, 어떤 이벤트 모드로 등록됐는지, 그 등록한 이벤트를 수행할 준비가 되어있는지에 대한 정보들을 담고 있는 객체이다.</p>
@@ -635,7 +939,30 @@ channel2<span class="token punctuation">.</span><span class="token function">reg
 <p>즉, <code class="language-text">SelectioKey</code>는 <strong>interest set</strong> 과 <strong>ready set</strong>을 활용하여 이벤트 핸들링을 도와주는 역할을 한다.</p>
 <p><code class="language-text">SelectableChannel</code> 의 <code class="language-text">register()</code> 부분에서 세번째 인자인 <code class="language-text">att</code>
 는 본 챕터에서 설명을 한다고 하였다.</p>
-<p><img src="./Screen%20Shot%202022-04-05%20at%2015.19.13%202.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 5.555555555555555%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAABCAYAAADeko4lAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAQElEQVQI1z3DQQqAMAxFQe+i1eSnJWChCvX+13ruOjBbqjPyYb6Nb1Z6v1ET8gO5UNTVzDF3FLGaCZ0XGQUrOz/DEB47YriwwgAAAABJRU5ErkJggg=='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="16"
+        title="16"
+        src="/static/7255d8edf94db20e7c6611b147f63006/37523/16.png"
+        srcset="/static/7255d8edf94db20e7c6611b147f63006/e9ff0/16.png 180w,
+/static/7255d8edf94db20e7c6611b147f63006/f21e7/16.png 360w,
+/static/7255d8edf94db20e7c6611b147f63006/37523/16.png 720w,
+/static/7255d8edf94db20e7c6611b147f63006/302a4/16.png 1080w,
+/static/7255d8edf94db20e7c6611b147f63006/bed7a/16.png 1437w"
+        sizes="(max-width: 720px) 100vw, 720px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>이 인자는 <code class="language-text">SelectionKey</code> 에 참조할 객체를 추가하는 메서드고 해당 키에 참조할 객체가 있으면 그 객체를 리턴하고, 없으면 null을 리턴한다.</p>
 <p>이 인자는 <code class="language-text">attachement()</code> 메서드로 가져올 수 있으며, <code class="language-text">register()</code> 로 등록이 가능하지만 <code class="language-text">attach()</code> 메서드로도 등록할 수 있다.</p>
 <p>이 메서드의 사용 이유는 클라이언트마다 특정 세션 값 부여 및 접속을 오래 유지하지 않은 클라이언트에 그 처리를 담당하는 핸들러를 붙여서 사용하는 등의 용도로 사용된다고 한다.</p>
@@ -735,14 +1062,56 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 <ul>
 <li><strong>블록킹(Blocking) I/O 및 동기(Synchronous) I/O 모델</strong></li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-05%20at%2023.34.47.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 609px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 60.55555555555555%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAMCAYAAABiDJ37AAAACXBIWXMAAAsTAAALEwEAmpwYAAABX0lEQVQoz41T2XKDMAzk/z+vD32gkEI4CiZcJgFsY29HSmBImjbVjAZLltertfCccyAnu1wuSJIExziGlAPn1v3VjTGQUiKKItR1jWVZ7uq8PaBzFn0vUZ1qWGvxmyml0HUdf6luf6G3FlFgnUOYCMRpxbmu65n1+XzGMAzsFJNppX5cxIBEmQ5YY9CNE96jFPWp4VyW5RBCoCxLFEXBTjHtfRwS7qZpajRNg3EcGdSjBRUCDn4UI8wLuJsuvxkxqU4ts6Xz0zRtWjJgmqYMWLY9wrxktq8AjdH8JVByrfUVkAJmaC3krPFZCLjlCtj3PXzfRxiGCIIAWZZtj3WIc7Rty+2SE0sGpFvmeWZWclZ4C46I4wxaKx4L0o90q6qK16QfdZXlYpuOu0d5bOdLNDhm4mXL8zw9nVNvH5AZrTf6j8V7X1/1JSCJq24z9gxozf8bkERfhf+L4eMvtwJ+A8ZcqTwnVeLpAAAAAElFTkSuQmCC'); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="17"
+        title="17"
+        src="/static/edf3e49aa1dc74c52ca1571e4257b2d8/d0d8c/17.png"
+        srcset="/static/edf3e49aa1dc74c52ca1571e4257b2d8/e9ff0/17.png 180w,
+/static/edf3e49aa1dc74c52ca1571e4257b2d8/f21e7/17.png 360w,
+/static/edf3e49aa1dc74c52ca1571e4257b2d8/d0d8c/17.png 609w"
+        sizes="(max-width: 609px) 100vw, 609px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>위의 그림을 보면 알겠지만 어플리케이션은 커널의 응답이 올 때까지 <strong>블록킹</strong> 된다. (다른 작업을 하지 못한다.)</p>
 <p>이전 포스팅에서 말한 시스템 콜의 예시로 들면 <strong>사용자 모드에서 커널 모드로 전환 후에 작업을 처리하여 다시 사용자 모드로 돌아올 때 까지 작업이 차단</strong>되는 것이다.</p>
 <p>당연히, 우리 똑똑한 어르신들은 이러한 응답을 대기하는 유휴시간이 발생하기 때문에 이 시간을 줄일 수 없을까? 고민을 하게 되었고 그렇게 나온 I/O 모델이 논블록킹 I/O 모델이다.</p>
 <ul>
 <li><strong>논블록킹(Non-Blocking) I/O 모델</strong></li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-05%20at%2023.38.15.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 505px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 71.11111111111111%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAYAAAAvxDzwAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB6ElEQVQ4y31TibKaQBD0/39OS0utBAGVQ45FlpvlsFM9ebz4EvK2aiyhZrtnupvNOI7IsgxRFCFJEpRlidfrtVrzPKOua6RpijiOpZf3eZaeDZvKooDrOALa9z2+O8YYPB4PuK4r4NM0fSHd8KcdBvywA6RKo+86XK9XhGEoU/i+jyAIpDzPE5CmaTBN4z9kn4C6qhFGCbQuZAKublkW7vc7HMeBbdvyTNBxHOAHMSzHR9c2shWJ8zxfVp5wTRQsN4TnRxiMQdu20lAUhZTWWp45nTE9nk+NhwygUVU1qqr6lGoDvFA0DYJHirbtRRNOopQSs8i+mEDthmEQWda0lgnZQGPIQhCyctXdbofz+Yz9fo/D4YDtdovL5YKqKnFxbrg4/jog3bXjFCfLQxAmeM2TTNF9TPFefM8NyrISvRmbxTRuIIDiWt8jThSMGYSJE7+zst7f50WD49lB17afZDRTANngqyfsWwitS7RNIxlbgk52RoiTUApezrIcKsv/HxsJd1mKu7zA/9TtdDrheDxKkYT5Y2xo4E/7t4bzX1+TADa9QaKeUFmGvu/EHIabIAwzi3nMtcYwGESxws2LvkjyB3Ce4UYJdqcbouT57We3aMksstYBP5rCSKGq29Wm9+Kh2zRhDfAXZ5Qz+MZHlI0AAAAASUVORK5CYII='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="18"
+        title="18"
+        src="/static/8191748b02ba47363bbbaf9b729e3bc1/c0cb9/18.png"
+        srcset="/static/8191748b02ba47363bbbaf9b729e3bc1/e9ff0/18.png 180w,
+/static/8191748b02ba47363bbbaf9b729e3bc1/f21e7/18.png 360w,
+/static/8191748b02ba47363bbbaf9b729e3bc1/c0cb9/18.png 505w"
+        sizes="(max-width: 505px) 100vw, 505px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>논 블록킹은 위에서 보는 바와 같이 시스템 콜이 발생된 뒤에 이 응답이 끝날때 까지 기다리는 것이 아니라 제어권이 다시 어플리케이션에게 전달되는 것을 확인할 수 있다.
 이때 주기적으로 I/O의 처리 가능한 상태를 판단하면서 다른 일을 수행한다.</p>
 <p>폴링 통신 방식과 흡사하다고 생각하면 된다.</p>
@@ -750,7 +1119,28 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 <ul>
 <li><strong>비동기(Asynchronous) I/O 모델</strong></li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-05%20at%2023.42.15.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 516px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 70.55555555555556%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAYAAAAvxDzwAAAACXBIWXMAAAsTAAALEwEAmpwYAAABnUlEQVQ4y41Ti46CMBDk/3/OM/FOwPNUXuVZQFoKos5ll8DpaaKbbEqaZTo7s2sBwPl8hlINqqrC8XhE13V0jev1epdTrdYaUkqu7U/9Xa01FUVRBMdxcDgcoJTiosvl8gDY9z3quobruhBCoG3bR8CxFIjTAqbr8U4YYx4eZECiH4YhpCzwsdqhrDXOw4A8z1kCYkPt0XdRFHxStK2eWd+GRZfUMkUQJZDlCBIEAeI45iQ56KSH6SS9v5wdlG5RSoksy5gAyWHd6uMFCZQ2b7XshynSLEdZlmiahg0ahmEEnGJle5DVc0P+m2NM+/QhNmWk28H+DlHW6unI/AdUSrNU493f4xbZ7robRFGIT8djU5jhK0CtuYunpkxFn64/A76KzrQMSDM75azhBGhvfMiqQRwLbLdbLJdL2LaN9XrNuVgsePBpfPa+QJpm7HCappy0YfOmUOwOApFIWE8qpDGhbaARSpIEnuexqzSDzrcPYx6XwDqdTtjt9xAiwmL1g/rYvtmyuTNjNoXYkTFEVyT5vHqvXKZ/JlNuAX8BiAQ/dzjble0AAAAASUVORK5CYII='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="19"
+        title="19"
+        src="/static/4ee8784ac6c6e5189576794c1e002fe3/75dcb/19.png"
+        srcset="/static/4ee8784ac6c6e5189576794c1e002fe3/e9ff0/19.png 180w,
+/static/4ee8784ac6c6e5189576794c1e002fe3/f21e7/19.png 360w,
+/static/4ee8784ac6c6e5189576794c1e002fe3/75dcb/19.png 516w"
+        sizes="(max-width: 516px) 100vw, 516px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>가장 큰 차이점은 논블록킹 I/O 모델처럼 주기적으로 처리 여부를 응답하는 것이 아니라 커널에 시스템 콜을 한 뒤에 어플리케이션은 계속 다른 일을 하다가 커널이 <strong>콜백</strong> 으로 완료여부를 알려준다. 즉, <strong>I/O 처리가 완료가 된 타이밍에 결과를 회신하는 모델</strong>이다.</p>
 <p>차이점을 정리하자면 비동기 I/O 모델은 완료를 했을 때 통지를 하지만 논블록킹 I/O 모델은 처리가 가능한 상태를 판단하면서 처리한다.</p>
 <p>이제 I/O 다중화 모델만 남아있는데 이를 더 잘 이해하기 위해서는 논블록킹 I/O의 단점을 살펴보는 것이 좋다.</p>
@@ -765,7 +1155,29 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 <ul>
 <li><strong>I/O 다중화 모델</strong></li>
 </ul>
-<p><img src="./Screen%20Shot%202022-04-05%20at%2023.54.12.png" alt=""></p>
+<p><span
+      class="gatsby-resp-image-wrapper"
+      style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; "
+    >
+      <span
+    class="gatsby-resp-image-background-image"
+    style="padding-bottom: 56.666666666666664%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAYAAAB/Ca1DAAAACXBIWXMAAAsTAAALEwEAmpwYAAABXUlEQVQoz3WS6aoCMQyF+/6vpTD/3BUFFXHfV2bGbTzyBVqq15uhMG2Sk3OSOEVWFIW63a4qlYoGg4GyLNNut9NqtdLpdNL1erUzmUzMn+e55b1er3DcZrMx536/twcSZrNZCFiv11osFgaYpqnm87nG47GB9vt93W63QMgAR6ORSqWSlsulns/nh5Pvl/liGIAQoBjmhsOhqtWqVb3f70G6T/gPzPuR3el01Gw2rUUOCbVazQAfj0dI8sDn81mXy0Xb7TawiIvBkDvqiHf0jj4eDofAkAAPRkva7bYajYaOx6O9cW+1WqHXsbn4AqCfNKwwhkF/KQhDmDIMZEKEHEixDQzUEdjr9Ww1viV/V4/vfoAA0bJ6vW7b4qhYLpc1nU4/hkEC/zClmGdM45HO2vBPPoCw5v2PZHYuSRIxfRqOAt4IRgGFOfTWLzdxnrGL14CDk8B4J39J/r1Shd5HwE1KrFHWgQAAAABJRU5ErkJggg=='); background-size: cover; display: block;"
+  ></span>
+  <img
+        class="gatsby-resp-image-image"
+        alt="20"
+        title="20"
+        src="/static/8d4e71078f49ceea5b931bace38519ff/37523/20.png"
+        srcset="/static/8d4e71078f49ceea5b931bace38519ff/e9ff0/20.png 180w,
+/static/8d4e71078f49ceea5b931bace38519ff/f21e7/20.png 360w,
+/static/8d4e71078f49ceea5b931bace38519ff/37523/20.png 720w,
+/static/8d4e71078f49ceea5b931bace38519ff/c946b/20.png 805w"
+        sizes="(max-width: 720px) 100vw, 720px"
+        style="width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;"
+        loading="lazy"
+        decoding="async"
+      />
+    </span></p>
 <p>우리가 봤던 <code class="language-text">Selector</code>와 <code class="language-text">SelectionKey</code> 등의 개념을 기억하면서 위의 그래프를 살펴보자.  <strong>select</strong> 시스템 콜은 <code class="language-text">Selector.select()</code> 라고 볼 수 있을 것이며 <strong>data ready</strong> 부분은 <code class="language-text">SelectionKey</code> 의 <strong>ready set</strong> 이 존재하는 경우일 것이다.</p>
 <p>즉, 우리가 공부한 NIO는 <strong>I/O 다중화 모델</strong>을 구현할 수 있는 객체들이다.
 이러한 개념들을 출발하여 오늘날 I/O 모델의 중심이라 볼 수 있는 이벤트 주도 아키텍처(Event-Driven Architecture)나 사가 패턴<sup id="fnref-5"><a href="#fn-5" class="footnote-ref">5</a></sup>등이 탄생하였다고 볼 수 있다.</p>
