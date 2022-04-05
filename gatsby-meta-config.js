@@ -9,7 +9,7 @@ module.exports = {
       repo: `brewagebear/blog-comments`, // `zoomkoding/zoomkoding-gatsby-blog`,
     },
   },
-  ga: 'G-X6LE5X6J48', // Google Analytics Tracking ID
+  ga: 'G-JSYQ7FRW6F', // Google Analytics Tracking ID
   author: {
     name: `Bear`,
     bio: {
