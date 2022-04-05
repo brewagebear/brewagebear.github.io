@@ -54,7 +54,7 @@ NIO의 모든 기술을 다루고 네티까지 가기에는 시간이 매우 복
 
 하지만 그림으로 예시를 들었던 부분은 이러하였다.
 
-![java-io-system-call](./318E7954-F9A4-41DE-96E5-C73D07CF2623%203.png)
+![java-io-system-call](./2.png)
 
 즉, NIO에서는 위의 플로우가 맞지만, Blocking I/O에서는 (NIO를 제외한 나머지가 모두 Blocking I/O이다.) 데이터가 커널영역에 있는 버퍼로 전송되고, 다시 또 이 버퍼의 값을 JVM의 버퍼로 옮기는 이중 작업이 발생하였다고 했다. 
 
@@ -80,7 +80,7 @@ public static ByteBuffer allocateDirect(int capacity) {
 
 즉 리턴 할 때 `DirectByteBuffer` 를 생성해주는데 이 녀석을 보면 아래와 같이 `MappedByteBuffer` 를 상속받는 놈임을 확인 할 수 있다. 
 
-![MappedByteBuffer](./Screen%20Shot%202022-04-01%20at%2022.39.56%203.png)
+![MappedByteBuffer](./3.png)
 
 
 따라서, `ByteBuffer` 를 사용하면 우리가 이전 시간에 말했던 `MMIO` 와 `가상메모리` 의 장점을 갖게되고 보다 빠르게 읽고 쓰기가 가능해진다. 
@@ -139,7 +139,7 @@ public static ByteBuffer allocateDirect(int capacity) {
 
 ## STEP 2. Channel
 
-![Channel](./A4E31D91-FF77-40B7-BC47-D03AC22EF297%203.png)
+![Channel](./4.png)
 
 채널은 스트림과 상당히 유사하지만 채널이 **스트림의 확장이나 발전된 형태는 아니다.** 일종의 게이트웨이라 볼 수 있는데 단지 기존의 파일이나 소켓 등에서 사용하던 스트림을 네이티브 IO 서비스를 이용할 수 있도록 도와주는 메서드를 제공한다.
 
@@ -222,7 +222,7 @@ NIO의 채널에서는 효율적인 입출력을 위해 운영체제가 지원�
 
 이 부분은 자바 공식문서에도 친절하게 설명되어있다.  [FileChannel (Java SE 11 & JDK 11 )](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/channels/FileChannel.html)
 
-![FileChannel-Thread](./Screen%20Shot%202022-04-03%20at%2017.37.09%203.png)
+![FileChannel-Thread](./5.png)
 
 이제 파일채널의 중요한 속성들을 알아보고자 한다.
 
@@ -272,7 +272,7 @@ public class FileLocking {
 MMIO를 이전 포스팅에서 설명했었다. 파일 채널은 이를 지원을 한다.
 추상 메서드인 `map()` 을 통해서 처리가 된다.
 
-![](./Screen%20Shot%202022-04-03%20at%2017.48.41%203.png)
+![](./6.png)
 
 이때 인자를 보면 `MapMode` 객체를 받는 것을 확인할 수 있는데 이 객체는 세가지 상수 값을 갖는다.
 
@@ -322,23 +322,23 @@ private void initFileBuffer(int size, File file) throws FileNotFoundException {
 
 + 파일의 크기와 같은 버퍼 사용 시 파일 복사 속도
 
-![](./Screen%20Shot%202022-04-03%20at%2018.00.02%203.png)
+![](./7.png)
 
 + 메모리 매핑 사용 시 파일 복사 속도
 
-![](./Screen%20Shot%202022-04-03%20at%2018.00.48%203.png)
+![](./8.png)
 
 + 논 다이렉트 바이트 버퍼 사용 시 파일 복사 속도
 
-![](./Screen%20Shot%202022-04-03%20at%2018.01.56%203.png)
+![](./9.png)
 
 + 다이렉트 바이트 버퍼 사용 시 파일 복사 속도
 
-![](./Screen%20Shot%202022-04-03%20at%2018.02.44%203.png)
+![](./10.png)
 
 + 채널 직접 전송 시 파일 복사 속도
 
-![](./Screen%20Shot%202022-04-03%20at%2018.03.23%203.png)
+![](./11.png)
 
 이를 통해서 채널 직접 전송 시 파일 복사 속도는 메모리 매핑을 사용하는 것보다 조금 나은 성능을 갖는다고 알 수 있다. 
 
@@ -385,7 +385,7 @@ socketChannel.configureBlocking(false);
 
 어? 이거 어디서 본 방식 같은데라고 생각할 수 있다. 이러한 방식을 채택해서 개발자에게 제일 친숙한 것이 바로 **Node.js의 이벤트 루프(Event Loop)**[^3] 이다.
 
-![](./eventloop%203.webp)
+![](./eventloop.webp)
 
 이 또한, 따로 찾아보기를 권장하며 (범위를 벗어나기에) 우리가 중점으로 두어야할 내용은 이벤트 주도 아키텍처에서 리액터 패턴이라는 것이 존재하고, 셀렉터는 바로 이 리액터 패턴을 구성하는 요소 중에 리액터를 담당하는 놈이라고 이해하면된다.
 
@@ -455,8 +455,8 @@ socketChannel.configureBlocking(false);
 
 첫 번째의 경우에는 소켓채널에서 알려줬으니 두 번째 기능을 알아보고자 한다.
 
-![](./Screen%20Shot%202022-04-05%20at%2015.18.45.png)
-![](./Screen%20Shot%202022-04-05%20at%2015.19.13.png)
+![](./12.png)
+![](./13.png)
 
 위 두개의 `register()` 메서드를 통해서 채널을 셀렉터에 등록을 할 수 있다.
 세번째 인자인 `Object att` 는 `SelectionKey` 를 다룰 때 설명하고자 한다.
@@ -470,7 +470,7 @@ socketChannel.configureBlocking(false);
 
 위의 이벤트들은 `SelectionKey`에 상수로 등록되어있다.
 
-![](./Screen%20Shot%202022-04-05%20at%2015.23.28.png)
+![](./14.png)
 
 그래서 아래와 같은 코드로 채널을 셀렉터에 등록할 수 있다.
 
@@ -526,11 +526,11 @@ for (SelectionKey key : keys) {
 
 결과를 살펴보면 아래와 같다.
 
-![](./Screen%20Shot%202022-04-05%20at%2016.00.29.png)
+![](./15.png)
 
 그림으로 보면 다음과 같을 것이다.
 
-![](.AC194916-DA9B-4690-9652-92D95746040D.png)
+![](./AC194916-DA9B-4690-9652-92D95746040D.png)
 
 셀렉터는 이렇게 이벤트가 발생한 채널들만 선택해서 각 이벤트에 맞는 동작을 하도록 모든 이벤트들에 대한 컨트롤러 역할을 한다.
 
@@ -557,7 +557,7 @@ for (SelectionKey key : keys) {
 `SelectableChannel` 의 `register()` 부분에서 세번째 인자인 `att`
 는 본 챕터에서 설명을 한다고 하였다.
 
-![](./Screen%20Shot%202022-04-05%20at%2015.19.13%202.png)
+![](./16.png)
 
 이 인자는 `SelectionKey` 에 참조할 객체를 추가하는 메서드고 해당 키에 참조할 객체가 있으면 그 객체를 리턴하고, 없으면 null을 리턴한다. 
 
@@ -643,7 +643,7 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 
 + **블록킹(Blocking) I/O 및 동기(Synchronous) I/O 모델**
 
-![](./Screen%20Shot%202022-04-05%20at%2023.34.47.png)
+![](./17.png)
 
 위의 그림을 보면 알겠지만 어플리케이션은 커널의 응답이 올 때까지 **블록킹** 된다. (다른 작업을 하지 못한다.) 
 
@@ -653,7 +653,7 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 
 + **논블록킹(Non-Blocking) I/O 모델**
 
-![](./Screen%20Shot%202022-04-05%20at%2023.38.15.png)
+![](./18.png)
 
 논 블록킹은 위에서 보는 바와 같이 시스템 콜이 발생된 뒤에 이 응답이 끝날때 까지 기다리는 것이 아니라 제어권이 다시 어플리케이션에게 전달되는 것을 확인할 수 있다. 
 이때 주기적으로 I/O의 처리 가능한 상태를 판단하면서 다른 일을 수행한다.
@@ -664,7 +664,7 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 
 + **비동기(Asynchronous) I/O 모델**
 
-![](./Screen%20Shot%202022-04-05%20at%2023.42.15.png)
+![](./19.png)
 
 가장 큰 차이점은 논블록킹 I/O 모델처럼 주기적으로 처리 여부를 응답하는 것이 아니라 커널에 시스템 콜을 한 뒤에 어플리케이션은 계속 다른 일을 하다가 커널이 **콜백** 으로 완료여부를 알려준다. 즉, **I/O 처리가 완료가 된 타이밍에 결과를 회신하는 모델**이다.
 
@@ -687,7 +687,7 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 
 + **I/O 다중화 모델**
 
-![](./Screen%20Shot%202022-04-05%20at%2023.54.12.png)
+![](./20.png)
 
 우리가 봤던 `Selector`와 `SelectionKey` 등의 개념을 기억하면서 위의 그래프를 살펴보자.  **select** 시스템 콜은 `Selector.select()` 라고 볼 수 있을 것이며 **data ready** 부분은 `SelectionKey` 의 **ready set** 이 존재하는 경우일 것이다.
 
