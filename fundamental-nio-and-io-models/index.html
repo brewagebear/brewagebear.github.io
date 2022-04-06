@@ -636,7 +636,7 @@
 </ol>
 <p>기존 소켓이나 I/O를 통한 네트워크 프로그래밍의 가장 큰 문제는 <strong>블록킹이 된다</strong>는 점이었다.</p>
 <p><strong>이 때문에, 멀티쓰레드 모델을 사용하게 되었지만, 이 모델은 클라이언트당 쓰레드 한 개를 사용해야 하므로 자원을 비효율적으로 사용하게 되었다. 하지만, 많은 클라이언트들이 접속해서 사용해야 될 쓰레드의 개수가 많아지면서 쓰레드 컨텍스트 스위칭 오버헤드가 많아지면서 성능 저하를 가져왔다.</strong> (그래서 현대에서는 쓰레드풀 모델을 사용한다.)</p>
-<p>하지만, 논블록킹 소켓채널이 도입됨에 따라 멀티플렉스 I/O를 지원하는 <code class="language-text">Selector</code> 가 도입되어서 기존의 문제가 해결되었다.</p>
+<p>하지만, 논블록킹 소켓채널이 도입됨에 따라 멀티플렉스 I/O를 지원하는 셀렉터가 도입되어서 기존의 문제가 해결되었다.</p>
 <p>참고로, 소켓 채널은 별다른 설정을 하지 않으면 기본적으로 <strong>블록킹 모드로 설정</strong>된다.
 따라서 아래와 같이 논블록킹 모드로 바꿔줘야한다.</p>
 <div class="gatsby-highlight" data-language="java"><pre class="language-java"><code class="language-java"><span class="token class-name">SocketChannel</span> socketChannel <span class="token operator">=</span> <span class="token class-name">SocketChannel</span><span class="token punctuation">.</span><span class="token keyword">open</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">InetSocketAddress</span><span class="token punctuation">(</span><span class="token string">"host ip"</span><span class="token punctuation">,</span> port<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -798,7 +798,7 @@ socketChannel<span class="token punctuation">.</span><span class="token function
     </span></p>
 <p>위 두개의 <code class="language-text">register()</code> 메서드를 통해서 채널을 셀렉터에 등록을 할 수 있다.
 세번째 인자인 <code class="language-text">Object att</code> 는 셀렉션키를 다룰 때 설명하고자 한다.</p>
-<p>여기서 <code class="language-text">ops</code> 는 이벤트의 모드라고 볼 수 있다. <code class="language-text">Selector</code>에 등록할 수 있는 이벤트 모드들은 4가지가 있다.</p>
+<p>여기서 <code class="language-text">ops</code> 는 이벤트의 모드라고 볼 수 있다. 셀렉터에 등록할 수 있는 이벤트 모드들은 4가지가 있다.</p>
 <ol>
 <li><strong>OP_READ</strong> : 서버가 클라이언트의 요청을 <code class="language-text">read</code> 할 수 있을 때 발생하는 이벤트</li>
 <li><strong>OP_WRITE</strong> : 서버가 클라이언트의 응답을 <code class="language-text">write</code> 할 수 있을 때 발생하는 이벤트</li>
@@ -1016,19 +1016,19 @@ channel2<span class="token punctuation">.</span><span class="token function">reg
 셀렉터는 <code class="language-text">select()</code> , <code class="language-text">poll()</code> 과 같은 시스템 콜을 래핑한 것이다.</p>
 <p>실제 사용 방식은 <code class="language-text">select()</code> 메서드를 호출하면서 사용되는데 다음과 같은 방식으로 동작한다.</p>
 <ul>
-<li><strong>Selector 동작 방식</strong></li>
+<li><strong>셀렉터 동작 방식</strong></li>
 <li><strong>취소된 키 집합을 체크한다. ··· ①</strong>
 <ul>
 <li>만약 집합이 비어 있지 않다면
 <ul>
-<li>이 집합에 저장된 각각의 키들은 Selector가 관리하는 세가지 집합에서 모두 삭제되어 각 키와 연관된 채널이 Selector에서 등록이 해제된다.</li>
+<li>이 집합에 저장된 각각의 키들은 셀렉터가 관리하는 세가지 집합에서 모두 삭제되어 각 키와 연관된 채널이 셀렉터에서 등록이 해제된다.</li>
 </ul>
 </li>
 </ul>
 </li>
 <li><strong>등록된 키 집합을 체크한다. ··· ②</strong>
 <ul>
-<li>만약 <strong>ready set</strong>이 비어있지 않은 <code class="language-text">SelectionKey</code>가 존재한다면
+<li>만약 <strong>ready set</strong>이 비어있지 않은 셀렉션키가 존재한다면
 <ul>
 <li>등록된 키 집합에 넣는다. (이미 존재한다면 그 키를 업데이트 처리만 한다.)</li>
 </ul>
@@ -1059,7 +1059,7 @@ channel2<span class="token punctuation">.</span><span class="token function">reg
 <li>
 <p><code class="language-text">selectNow()</code></p>
 <ul>
-<li>논블록킹 메서드이다. 따라서 이용 가능한 채널이 없으면 0을 리턴하고, 아니면 마찬가지로 등록된 키 집합안에 들어있는 <code class="language-text">SelectionKey</code>의 개수를 리턴한다.</li>
+<li>논블록킹 메서드이다. 따라서 이용 가능한 채널이 없으면 0을 리턴하고, 아니면 마찬가지로 등록된 키 집합안에 들어있는 셀렉션키의 개수를 리턴한다.</li>
 </ul>
 </li>
 </ol>
@@ -1110,7 +1110,7 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 </p>
 <p>논 블록킹은 위에서 보는 바와 같이 시스템 콜이 발생된 뒤에 이 응답이 끝날때 까지 기다리는 것이 아니라 제어권이 다시 어플리케이션에게 전달되는 것을 확인할 수 있다.
 이때 주기적으로 I/O의 처리 가능한 상태를 판단하면서 다른 일을 수행한다.</p>
-<p>폴링<sup id="fnref-8"><a href="#fn-8" class="footnote-ref">8</a></sup> 통신 방식과 흡사하다고 생각하면 된다.</p>
+<p>풀링<sup id="fnref-8"><a href="#fn-8" class="footnote-ref">8</a></sup> 통신 방식과 흡사하다고 생각하면 된다.</p>
 <p>그렇다면, 비동기 I/O 모델이랑은 어떻게 다른 것일까?</p>
 <ul>
 <li><strong>비동기(Asynchronous) I/O 모델</strong></li>
@@ -1129,13 +1129,13 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 <p>가장 큰 차이점은 논블록킹 I/O 모델처럼 주기적으로 처리 여부를 응답하는 것이 아니라 커널에 시스템 콜을 한 뒤에 어플리케이션은 계속 다른 일을 하다가 커널이 <strong>콜백</strong> 으로 완료여부를 알려준다. 즉, <strong>I/O 처리가 완료가 된 타이밍에 결과를 회신하는 모델</strong>이다.</p>
 <p>차이점을 정리하자면 비동기 I/O 모델은 완료를 했을 때 통지를 하지만 논블록킹 I/O 모델은 처리가 가능한 상태를 판단하면서 처리한다.</p>
 <p>이제 I/O 다중화 모델만 남아있는데 이를 더 잘 이해하기 위해서는 논블록킹 I/O의 단점을 살펴보는 것이 좋다.</p>
-<p>위에서 말한 것과 같이 이는 폴링 방식과 매우 흡사하다고 하였다.
-즉, <strong>시스템 콜이 계속해서 요청될 수 있는 단점이 존재하는 것</strong>이다.</p>
+<p>위에서 말한 것과 같이 이는 풀링 방식과 매우 흡사하다고 하였다. 즉, <strong>시스템 콜이 계속해서 요청될 수 있는 단점이 존재하는 것</strong>이다.</p>
 <p>그래서 옛 성인들께서는 이를 필요할 때만 호출하게끔 하면 더 좋은 성능을 얻을 수 있게 될 것이라고 판단하였다.</p>
-<p>위의 단점이 안 와닿을 수 있기에 스타벅스 사이렌 오더를 만든다 가정해보자.
-이를 논블록킹 서버로 만들었다면, 우리에게 계속 귀찮게 “야 너 주문할 커피 있어?” 라고 알림이 올 것이다.</p>
+<p>위의 단점이 안 와닿을 수 있기에 스타벅스 사이렌 오더를 만든다 가정해보자.</p>
+<p>이를 논블록킹 서버로 만들었다면, 우리에게 계속 귀찮게 <strong>“야 너 주문할 커피 있어?”</strong> 라고 알림이 올 것이다.</p>
 <p>하지만, 이를 필요한 시점에만 물어보게끔 할 수 있다면?
-즉, 이벤트를 등록해두는 것이다. “사용자 커피 주문 요청”이라는 이벤트를 등록해두고 없으면 호출을 안하다가 내가 사이렌 오더를 통해서 주문 요청을 하면 이 이벤트가 등록이 될 것이고, 이 때 처리를 하면 될 것이다.</p>
+즉, 이벤트를 등록해두는 것이다.</p>
+<p><strong>“사용자 커피 주문 요청”</strong> 이라는 이벤트를 등록해두고 없으면 호출을 안하다가 내가 사이렌 오더를 통해서 주문 요청을 하면 이 이벤트가 등록이 될 것이고, 이 때 처리를 하면 될 것이다.</p>
 <p>이게 바로 <strong>I/O 다중화 모델</strong> 이다.</p>
 <ul>
 <li><strong>I/O 다중화 모델</strong></li>
