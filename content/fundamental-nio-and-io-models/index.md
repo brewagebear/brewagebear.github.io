@@ -851,8 +851,7 @@ public class InputThread extends Thread {
 8. [Reactor Pattern 과 I/O Multiplexing (반응자 패턴, 입출력 다중화, select, epoll, 혼동 포인트, ProjectReactor)](https://sjh836.tistory.com/184)
 9. [리액터패턴 / 프로액터패턴](https://brunch.co.kr/@myner/42)
 10. [GitHub - kasun04/nio-reactor: A reference implementation of the Reactor Pattern with Java NIO.](https://github.com/kasun04/nio-reactor)
-11. [Reactor - An Object Behavioral Pattern for
-Demultiplexing and Dispatching Handles for Synchronous Event](http://www.dre.vanderbilt.edu/~schmidt/PDF/reactor-siemens.pdf)
+11. [Reactor - An Object Behavioral Pattern for Demultiplexing and Dispatching Handles for Synchronous Event](http://www.dre.vanderbilt.edu/~schmidt/PDF/reactor-siemens.pdf)
 
 [^1]:[Memory-mapped I/O - Wikipedia](https://en.wikipedia.org/wiki/Memory-mapped_I/O)
 [^2]:[File locking - Wikipedia](https://en.wikipedia.org/wiki/File_locking)
