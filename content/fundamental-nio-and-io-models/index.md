@@ -29,10 +29,24 @@ categories: 개발
 
 이렇게 볼 수가 있다. 이제 실제로 NIO에서 위의 기술들을 어떻게 활용하는지 알아보고자 한다.
 
-## STEP 1. ByteBuffer
+# 자바 NIO의 동작원리 및 IO 모델
++ STEP 1. 바이트 버퍼(ByteBuffer) 
++ STEP 2. 채널(Channel)
+    + STEP 2.1 ScatteringByteChannel, GatheringByteChannel
+    + STEP 2.2 FileChannel
+    + STEP 2.3 SocketChannel
++ STEP 3. 셀렉터(Selector)
+    + STEP 3.1 기존의 네트워크 프로그래밍 모델의 단점
+    + STEP 3.2 셀렉터의 구조와 동작원리
+        + STEP 3.2.1 SelectableChannel(셀렉터블 채널)
+        + STEP 3.2.2 SelectionKey(셀렉션 키)
+        + STEP 3.2.3 Selector(셀렉터)
++ STEP 4. I/O 모델 및 간단한 채팅 어플리케이션 예제 
+
+## STEP 1. 바이트 코드(ByteBuffer)
 Buffer에 대한 사용법은 많은 블로그나 인터넷 도처에 널려있으니 구글링을 통해서 학습을 추천한다. 그 중에서 볼만하다고 여겨지는 것은 [Java NIO Buffer](http://tutorials.jenkov.com/java-nio/buffers.html) 라는 아티클이다.
 
-NIO의 모든 기술을 다루고 네티까지 가기에는 시간이 매우 복잡해지므로, 여기서는 바이트버퍼( `ByteBuffer`)에 대해서만 설명하고자 한다.
+여기서는 바이트버퍼( `ByteBuffer`)에 대해서만 설명하고자 한다.
 
 **왜 바이트버퍼만 다루려고하는 것인가?** 
 
@@ -42,11 +56,14 @@ NIO의 모든 기술을 다루고 네티까지 가기에는 시간이 매우 복
 
 > 운영체제가 이용하는 가장 기본적인 데이터 단위가 바이트고, 시스템 메모리 또한 순차적인 바이트들의 집합이기 때문이다.  
 
-+ java.nio.ByteBuffer.allocateDirect()
-
-![allocateDirect()](./1.png)
-
 우리는 해당 메서드를 통해서 기존 `allocate()`  통해서 버퍼를 생성하는 것과 같이 다이렉트 버퍼를 만들 수 있다.
+
+<p align="center">
+    <img src="./1.png">
+</p>
+<p align="center">
+    <em><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/ByteBuffer.html#allocateDirect(int)">JDK 11 API Docs, java.nio.ByteBuffer.allocateDirect(int capacity)</a></em>
+</p>
 
 여기서, 이전 포스팅에서 오류가 있던 점을 알 수 있었는데 나는 자바에서의 시스템 콜 호출순서가 아래와 같다고 설명하였다.
 
@@ -64,11 +81,10 @@ NIO의 모든 기술을 다루고 네티까지 가기에는 시간이 매우 복
 
 NIO의 경우에서 `ByteBuffer` 를 `allocateDirect()` 메서드로 생성할 경우 아래와 같은 플로우로 진행된다.
 
-`JVM -> 시스템 콜 -> JNI -> 디스크 컨트롤러 -> MMIO`
+`JVM -> 시스템 콜 -> JNI -> 디스크 컨트롤러 -> DMA -> 복사`
 
-MMIO는 이전 장에서 설명한 가상 메모리 방식이다. 즉, 다이렉트로 시스템 메모리에 복사를 할 수 있다. 
-
-그렇기 때문에 `ByteBuffer` 가 중요한 것이다. 
+즉, 다이렉트로 시스템 메모리에 복사를 할 수 있다. 
+그렇기 때문에 **바이트버퍼가 중요한 것**이다. 
 
 위의 `allocateDirect()` 메서드를 살펴보면 아래와 같다.
 
@@ -82,8 +98,7 @@ public static ByteBuffer allocateDirect(int capacity) {
 
 ![MappedByteBuffer](./3.png)
 
-
-따라서, `ByteBuffer` 를 사용하면 우리가 이전 시간에 말했던 `MMIO` 와 `가상메모리` 의 장점을 갖게되고 보다 빠르게 읽고 쓰기가 가능해진다. 
+따라서, `ByteBuffer` 를 사용하면 보다 빠르게 읽고 쓰기가 가능해진다. 
 
 여기서 또 한가지 궁금증이 생길 수 있다. 
 
@@ -137,7 +152,7 @@ public static ByteBuffer allocateDirect(int capacity) {
 다이렉트 버퍼와 논 다이렉트 버퍼의 차이는 친절하게 자바 스펙에 나와있으니 참고해보자. [ByteBuffer (Java SE 11 & JDK 11 )](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/ByteBuffer.html)
 
 
-## STEP 2. Channel
+## STEP 2. 채널(Channel)
 
 ![Channel](./4.png)
 
@@ -145,9 +160,9 @@ public static ByteBuffer allocateDirect(int capacity) {
 
 스트림과 차이점을 위주로 설명해보자면 (여기서 스트림은 자바 8의 스트림 API가 아닌 FileInputStream과 같은 스트림을 의미한다.)
 
-1. 데이터를 받기 위한 타겟으로 `ByteBuffer` 를 사용
+1. 데이터를 받기 위한 타겟으로 바이트버퍼를 사용
 2. 채널을 이용하면 운영체제 수준의 네이티브 IO 서비스들을 직간접적으로 사용할 수 있다.
-	+ MMIO / 파일 락킹 등
+	+ MMIO[^1] / 파일 락킹[^2] 등
 3. 스트림과 달리 단방향 뿐만 아니라 양방향 통신도 가능하다.
 	+ 항상 양방향 통신을 사용할 수는 있지 않다
 		+ 소켓 채널은 양방향 통신을 지원하지만 파일 채널은 지원하지않는다.
@@ -168,13 +183,13 @@ public static ByteBuffer allocateDirect(int capacity) {
 
 이전 포스트에서 운영체제에서 지원하는 MMIO라는 기술을 알아보았다.
 
-NIO의 채널에서는 효율적인 입출력을 위해 운영체제가 지원하는 네이티브 IO 서비스인 Scatter/Gather를 사용할 수 있도록 위의 인터페이스를 제공해주고 있다.
+NIO의 채널에서는 효율적인 입출력을 위해 운영체제가 지원하는 네이티브 IO 서비스인 **Scatter/Gather**[^3]를 사용할 수 있도록 위의 인터페이스를 제공해주고 있다.
 
 이 인터페이스를 사용함으로써 시스템 콜과 커널 영역에서 프로세스 영역으로 버퍼 복사를 줄여주거나 또는 완전히 없애줄 수 있다.
 
 실제 코드는 [blog-example/GatheringWriteWithBuffer.java](https://github.com/brewagebear/blog-example/blob/main/nio-example/src/main/java/GatheringWriteWithBuffer.java) 와 [blog-example/ScatterBuffer](https://github.com/brewagebear/blog-example/blob/main/nio-example/src/main/java/ScatterBuffer.java)를 참고해보자.
 
-### STEP 2.2 FileChannel
+### STEP 2.2 파일채널(FileChannel)
 
 파일채널을 파일의 관련된 작업들을 지원하는 채널들로 아래의 특징을 갖고 있다.
 
@@ -194,7 +209,7 @@ NIO의 채널에서는 효율적인 입출력을 위해 운영체제가 지원�
 3. **대부분의 채널처럼 파일채널도 가능하면 네이티브 I/O 서비스를 사용하려한다.**
 4. **파일채널 객체는 스레드에 안전하다. (thread-safe)**
 
-#### STEP 2.2.1 FileChannel의 특징
+#### STEP 2.2.1 파일채널의 특징
 
 1. **파일채널은 항상 블록킹 모드이며, 비블록킹 모드로 설정할 수 없다.**
 
@@ -202,9 +217,9 @@ NIO의 채널에서는 효율적인 입출력을 위해 운영체제가 지원�
 
 그렇다면, 항상 파일채널은 블록킹 I/O로만 써야하는가? 
 
-> 그렇지는 않다. 비동기식 I/O로 처리할 수가 있다.  
+> 그렇지는 않다. 비동기 I/O로 처리할 수가 있다.  
 
-이는 이 포스팅의 핵심 주제이므로 나중에 같이 정리해보고자한다. 
+비동기 I/O 모델은 포스팅 결론부에서 다룰 예정이니 일단 이런 방식이 있구나정도로 넘어가자.
 
 2. **파일채널 객체는 직접 만들 수 없다.**
 
@@ -212,7 +227,7 @@ NIO의 채널에서는 효율적인 입출력을 위해 운영체제가 지원�
 
 3. **대부분의 채널처럼 파일채널도 가능하면 네이티브 I/O 서비스를 사용하려한다.**
 
-이는 위에서 상속과 구현관련 특징에서도 있는데 `ScatteringByteChannel` 을 통해서 MMIO가 가능하고 운영체제 네이티브 I/O인 파일락킹 등을 지원한다는 뜻이다.
+이는 위에서 상속과 구현관련 특징에서도 있는데 `ScatteringByteChannel` 을 통해서 MMIO[^1]가 가능하고 운영체제 네이티브 I/O인 파일락킹[^2] 등을 지원한다는 뜻이다.
 
 4. **파일채널 객체는 스레드에 안전하다. (thread-safe)**
 
@@ -226,11 +241,11 @@ NIO의 채널에서는 효율적인 입출력을 위해 운영체제가 지원�
 
 이제 파일채널의 중요한 속성들을 알아보고자 한다.
 
-#### STEP 2.2.2 FileChannel의 속성
+#### STEP 2.2.2 파일채널의 속성
 
 1. **파일 락킹(File Locking)**
 
-이전 포스팅에서 말한 바와 같이 공유 락과 배타 락이 있는데, 이 책에 나온 것으로 보면 일부 운영체제는 공유 락을 지원안한다고 하는데 이 책이 쓰인 게 벌써 18년이 지난 얘기로 그냥 뇌피셜로 공유 락은 요즘 다 지원하지 않을까? 생각은 해본다.
+이전 포스팅에서 말한 바와 같이 공유 락(Shared-Lock, S-Lock)과 배타 락(Exclusive-Lock, X-Lock)이 있는데, 이 책에 나온 것으로 보면 일부 운영체제는 공유 락을 지원안한다고 하는데 이 책이 쓰인 게 벌써 18년이 지난 얘기로 그냥 뇌피셜로 공유 락은 요즘 다 지원하지 않을까? 생각은 해본다.
 
 어쨋든 자세한 내용은 이전 포스팅에 달아뒀으니 중요한 특징만 살펴보겠다.
 
@@ -269,10 +284,15 @@ public class FileLocking {
  
 2. 메모리 매핑
 
-MMIO를 이전 포스팅에서 설명했었다. 파일 채널은 이를 지원을 한다.
+[MMIO](https://brewagebear.github.io/java-syscall-and-io/#step-214-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EB%A7%B5-%ED%8C%8C%EC%9D%BC-memory-mapped-io)를 이전 포스팅에서 설명했었다. 파일 채널은 이를 지원을 한다.
 추상 메서드인 `map()` 을 통해서 처리가 된다.
 
-![](./6.png)
+<p align="center">
+    <img src="./6.png">
+</p>
+<p align="center">
+    <em><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/channels/FileChannel.html#map(java.nio.channels.FileChannel.MapMode,long,long)">JDK 11 API Docs, java.nio.channels.Filechannel.map()</a></em>
+</p>
 
 이때 인자를 보면 `MapMode` 객체를 받는 것을 확인할 수 있는데 이 객체는 세가지 상수 값을 갖는다.
 
@@ -342,19 +362,17 @@ private void initFileBuffer(int size, File file) throws FileNotFoundException {
 
 이를 통해서 채널 직접 전송 시 파일 복사 속도는 메모리 매핑을 사용하는 것보다 조금 나은 성능을 갖는다고 알 수 있다. 
 
-500MB 파일을 복사하는 것으로 예제 코드를 짰으며, 전체 코드는 [blog-example/nio-example](https://github.com/brewagebear/blog-example/tree/main/nio-example/src/main/java/nio_copy)  이곳을 참고해보자.
+500MB 파일을 복사하는 것으로 예제 코드를 짰으며, 전체 코드는 [blog-example/nio-example - nio_copy](https://github.com/brewagebear/blog-example/tree/main/nio-example/src/main/java/nio_copy)  이곳을 참고해보자.
 
 
-### STEP 2.3 SocketChannel
+### STEP 2.3 소켓채널(SocketChannel)
 
-이제 얼마 안남았다. 
-채널의 양대산맥 중에 하나인 소켓채널에 대해서 알아보고자 한다.
+이전에는 파일채널에 대해서 알아보았다. 이제 채널의 양대산맥 중에 하나인 소켓채널에 대해서 알아보고자 한다.
 
-소켓 채널은 파일 채널과 비교하여 몇 가지 다른 특징이 존재한다.
+소켓채널은 파일채널과 비교하여 몇 가지 다른 특징이 존재한다.
 
 1. **비블록킹 모드 지원**
-2. **SelectableChannel을 상속해서 Selector와 함께 멀티플렉스 I/O가 가능**
-
+2. **SelectableChannel을 상속해서 Selector와 함께 멀티플렉스 I/O(=I/O 멀티플렉스)가 가능**
 
 기존 소켓이나 I/O를 통한 네트워크 프로그래밍의 가장 큰 문제는 **블록킹이 된다**는 점이었다.
 
@@ -374,25 +392,30 @@ socketChannel.configureBlocking(false);
 
 이제 대망의 셀렉터를 볼 차례이다.
 
-## STEP 3. Selector
-셀렉터는 리액터(Reactor) 패턴[^1]  중에서 리액터의 역할을 하는 놈이다.
+## STEP 3. 셀렉터(Selector)
+셀렉터는 리액터(Reactor) 패턴[^4]  중에서 리액터의 역할을 하는 놈이다.
 
 리액터 패턴의 상세한 부분은 주석을 달아놓은 링크를 참고하고, 여기서는 간략하게 설명하고자 한다.
 
-요즘 날 네트워크 프로그래밍을 하다보면 나오는 개념 중에 하나가 바로 이벤트 주도 아키텍처(Event-driven Architecture)[^2]일 것이다. 리액터 패턴도 그 아키텍처의 구성요소 중에 하나인데, 이 패턴은 이벤트 중심의 어플리케이션이 하나 이상의 클라이언트로부터 하나의 어플리케이션으로 동시에 전달되는 서비스 요청들을 나눠 각 요청에 상응하는 서비스 제공자에게 구별해서 보내준다.
+요즘 날 네트워크 프로그래밍을 하다보면 나오는 개념 중에 하나가 바로 이벤트 주도 아키텍처(Event-driven Architecture)[^5]일 것이다. 리액터 패턴도 그 아키텍처의 구성요소 중에 하나인데, 이 패턴은 이벤트 중심의 어플리케이션이 하나 이상의 클라이언트로부터 하나의 어플리케이션으로 동시에 전달되는 서비스 요청들을 나눠 각 요청에 상응하는 서비스 제공자에게 구별해서 보내준다.
 
 좀 더 깊게 설명하면, 클라이언트들의 모든 요청을 앞단의 큐에 저장하고 큐를 모니터링하는 스레드에 이벤트를 보낸다. 그러면 큐를 모니터링하는 스레드는 큐에 저장된 요청을 적절한 로직으로 보내서 해당 요청을 처리하게 한다.
 
-어? 이거 어디서 본 방식 같은데라고 생각할 수 있다. 이러한 방식을 채택해서 개발자에게 제일 친숙한 것이 바로 **Node.js의 이벤트 루프(Event Loop)**[^3] 이다.
+어? 이거 어디서 본 방식 같은데라고 생각할 수 있다. 이러한 방식을 채택해서 개발자에게 제일 친숙한 것이 바로 **Node.js의 이벤트 루프(Event Loop)**[^6] 이다.
 
-![](./eventloop.webp)
+
+<p align="center">
+    <img src="./eventloop.webp">
+</p>
+<p align="center">
+    <em><a href=https://medium.com/@nicomf1982/reactor-pattern-en-node-js-4f25ee703299">Nicolas Fernandez, Reactor pattern en Node.js</a></em>
+</p>
 
 이 또한, 따로 찾아보기를 권장하며 (범위를 벗어나기에) 우리가 중점으로 두어야할 내용은 이벤트 주도 아키텍처에서 리액터 패턴이라는 것이 존재하고, 셀렉터는 바로 이 리액터 패턴을 구성하는 요소 중에 리액터를 담당하는 놈이라고 이해하면된다.
 
-즉, 여러 `SelectableChannel` 의 `SelectionKey`를 자신에게 등록하게 하고 등록된 `SelectableChannel` 의 이벤트 요청들을 나눠서 적절한 서비스 제공자에게 
-보내 처리하는 것이다. 
+즉, **여러 채널의 셀렉션키를 자신에게 등록하게 하고 등록된 채널의 이벤트 요청들을 나눠서 적절한 서비스 제공자에게 보내 처리하는 것**이다. 
 
-이것을 통해 바로 **멀티플렉스 I/O**[^4]를 가능하게 해준다.
+이것을 통해 바로 **I/O 멀티플렉싱**[^7]를 가능하게 해준다.
 
 이제, 기존의 네트워크 프로그래밍 모델의 단점과 셀렉터의 동작원리에 대해서 알아보고자 한다.
 
@@ -420,30 +443,36 @@ socketChannel.configureBlocking(false);
 5. 서버의 OOM(OutOfMemoryException) 발생 문제
 	+ 당연히 수많은 쓰레드가 생기면 OOM이 발생할 수 있다. 그렇기 때문에 **쓰레드 풀 모델이 각광 받은 것**이다. 즉, 1번의 문제(쓰레드 컨텍스트 스위칭)과 5번의 문제(OOM) 때문에 요즘날 쓰레드 풀 모델을 사용한다 생각하면 된다.  그러나, 쓰레드 풀 모델을 사용한다해도 **확장성 문제**는 어쩔 수 없다. 
 
-이러한 문제 때문에 비블록킹 모델이 주목받기 시작한 것이다.
+이러한 문제 때문에 I/O 멀티플렉싱 모델이 주목받기 시작한 것이다.
 
 
 ### STEP 3.2 비블록킹 모델과 셀렉터 동작원리
 
-위에서 왜 비블록킹 모델이 탄생했는지 알아보았다.
+위에서 왜 I/O 멀티플렉싱 모델이 탄생했는지 알아보았다.
 이러한 모델을 만들기위한 핵심적인 기능들은 크게 세가지로 볼 수 있다.
 
-![](./68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67.png)
 
-1. `Selector`  : 리액터 패턴에서 리액터 역할을 해주는 객체 
-	+ `SelectionKey` 에 등록된 채널들이 발생시킨 이벤트에 대해 적절한 핸들러로 요청을 분기시키는 역할을 한다. 
+<p align="center">
+    <img src="./68747470733a2f2f77736f322e636f6d2f66696c65732f4553425f322e706e67.png">
+</p>
+<p align="center">
+    <em><a href="https://github.com/kasun04/nio-reactor">kasun04 - github, Java NIO - Reactor</a></em>
+</p>
 
-2. `SelectableChannel` : 셀렉터에 등록할 수 있는 채널들은 이 클래스를 상속받는다. 우리가 볼 예제는 소켓채널 클래스이므로, 셀렉터에 등록할 수 있다. 
+1. 셀렉터(Selector)  : 리액터 패턴에서 리액터 역할을 해주는 객체 
+	+ 셀렉션키(SelectionKey) 에 등록된 채널들이 발생시킨 이벤트에 대해 적절한 핸들러로 요청을 분기시키는 역할을 한다. 
 
-3. `SelectionKey` : 특정 채널과 `Selector` 사이에서 해당 이벤트에 대한 내용에 대한 정보를 들고 있는다. 이 값을 토대로 이벤트 요청을 처리한다.
+2. 셀렉터블채널(SelectableChannel) : 셀렉터에 등록할 수 있는 채널들은 이 클래스를 상속받는다. 우리가 볼 예제는 소켓채널 클래스이므로, 셀렉터에 등록할 수 있다. 
+
+3. 셀렉션키(SelectionKey) : 특정 채널과 셀렉터 사이에서 해당 이벤트에 대한 내용에 대한 정보를 들고 있는다. 이 값을 토대로 이벤트 요청을 처리한다.
 
 위의 내용을 토대로 전체적인 흐름을 보자면
 
-1. 채널을 `Selector`에 등록하면 이 등록에 관련된 채널과 `Selector`와 연관 정보를 갖고 있는 `SelectionKey`가 `Selector`에 저장되고, 리턴된다.
+1. 채널을 셀렉터에 등록하면 이 등록에 관련된 채널과 셀렉터와 연관 정보를 갖고 있는 셀렉션키가 셀렉터에 저장되고, 리턴된다.
 
-2. 위의 `SelectionKey`를 토대로 어떤 채널이 자신이 등록한 모드에 대해 동작할 준비가 되면 `SelectionKey`는 그 준비상태를 내부적으로 저장한다.
+2. 위의 셀렉션키를 토대로 어떤 채널이 자신이 등록한 모드에 대해 동작할 준비가 되면 셀렉션키는 그 준비상태를 내부적으로 저장한다.
 
-3. 소켓 서버의 예시를 들자면 클라이언트를 `accept`할 준비가되면 `SelectionKey`는 **준비상태**가 된 것이고, 이 때 `Selector`가 `select()` 메서드를 호출해서 자신에게 등록된 모든 `SelectionKey`를 검사하여 준비상태이면, 하나씩 순서대로 꺼내서 요청한 이벤트에 대해 적절하게 처리한다.
+3. 소켓 서버의 예시를 들자면 클라이언트를 `accept`할 준비가 되면 셀렉션키는 **준비상태**가 된 것이고, 이 때 셀렉터가 `select()` 메서드를 호출해서 자신에게 등록된 모든 셀렉션키를 검사하여 준비상태이면, 하나씩 순서대로 꺼내서 요청한 이벤트에 대해 적절하게 처리한다.
 
 이제 이 동작원리를 토대로 하나씩 살펴보자.
 
@@ -451,7 +480,7 @@ socketChannel.configureBlocking(false);
 
 앞에서 말한 바와 같이 이 **클래스를 상속받은 클래스**만이 셀렉터에 등록이 될 수 있다하였다.
 
-우리가 살펴 볼  `SelectableChannel` 의 기능은 2가지인데 첫 번째는 소켓채널에서 본 논블록킹 모드 활성화 기능이고 두 번째는 어떻게 셀렉터에 등록하느냐이다. 
+우리가 살펴 볼  `SelectableChannel` 의 기능은 2가지인데 **첫 번째는 소켓채널에서 본 논블록킹 모드 활성화 기능**이고 **두 번째는 어떻게 셀렉터에 등록하는 기능**이다. 
 
 첫 번째의 경우에는 소켓채널에서 알려줬으니 두 번째 기능을 알아보고자 한다.
 
@@ -459,7 +488,7 @@ socketChannel.configureBlocking(false);
 ![](./13.png)
 
 위 두개의 `register()` 메서드를 통해서 채널을 셀렉터에 등록을 할 수 있다.
-세번째 인자인 `Object att` 는 `SelectionKey` 를 다룰 때 설명하고자 한다.
+세번째 인자인 `Object att` 는 셀렉션키를 다룰 때 설명하고자 한다.
 
 여기서 `ops` 는 이벤트의 모드라고 볼 수 있다. `Selector`에 등록할 수 있는 이벤트 모드들은 4가지가 있다.
 
@@ -468,7 +497,7 @@ socketChannel.configureBlocking(false);
 3. **OP_CONNECT** : 서버가 클라이언트의 접속을 허락했을 때 발생하는 이벤트 
 4. **OP_ACCEPT** : 클라이언트가 서버에 접속했을 때 발생하는 이벤트 
 
-위의 이벤트들은 `SelectionKey`에 상수로 등록되어있다.
+위의 이벤트들은 셀렉션키에 상수로 등록되어있다.
 
 ![](./14.png)
 
@@ -536,36 +565,35 @@ for (SelectionKey key : keys) {
 
 #### STEP 3.2.2 SelectionKey
 
-어떤 채널이 어떤 `Selector`에, 어떤 이벤트 모드로 등록됐는지, 그 등록한 이벤트를 수행할 준비가 되어있는지에 대한 정보들을 담고 있는 객체이다.
+**어떤 채널이 어떤 셀렉터에, 어떤 이벤트 모드로 등록됐는지, 그 등록한 이벤트를 수행할 준비가 되어있는지에 대한 정보들을 담고 있는 객체**이다.
 
-즉, 이벤트 처리에 대해서 `Selector` 와 `SelectableChannel`  사이에서 도와주는 역할을 하는 객체이다.
+즉, 이벤트 처리에 대해서 셀렉터와 채널 사이에서 도와주는 역할을 하는 객체이다.
 
-`SelectionKey` 에는 크게 두가지 집합이 존재한다.
+셀렉션키에는 크게 두가지 집합이 존재한다.
 
-1. interest set
-2. ready set 
+1. **interest set**
+2. **ready set** 
 
-**interest set**은 위에서 여러 채널과 이벤트를 등록하는 예시 코드를 보여줬는데 이 코드에서`key.interestOps()` 라는 호출부가 존재한다.
+**interest set**은 위에서 여러 채널과 이벤트를 등록하는 예시 코드를 보여줬는데 이 코드에서 `key.interestOps()` 라는 호출부가 존재한다.
 
-코드를 보면 알겠지만 이 정보들은 `register` 할 때 등록했던 상수들 값이다.
-따라서 **interest set**은 셀렉터에 등록한 이벤트 정보를 담는 집합이라고 알고 있으면 된다. 
+코드를 보면 알겠지만 이 정보들은 `register` 할 때 등록했던 상수들 값이다. 따라서 **interest set**은 **셀렉터에 등록한 이벤트 정보를 담는 집합**이라고 알고 있으면 된다. 
 
-**ready set**은 `SelectableChannel` 에서 이벤트가 발생하면 그 이벤트들을 저장하는 집합이다.
+**ready set**은 **채널에서 이벤트가 발생하면 그 이벤트들을 저장하는 집합**이다.
 
-즉, `SelectioKey`는 **interest set** 과 **ready set**을 활용하여 이벤트 핸들링을 도와주는 역할을 한다. 
+즉, 셀렉션키는 **interest set** 과 **ready set**을 활용하여 이벤트 핸들링을 도와주는 역할을 한다. 
 
-`SelectableChannel` 의 `register()` 부분에서 세번째 인자인 `att`
+채널의 `register()` 부분에서 세번째 인자인 `att`
 는 본 챕터에서 설명을 한다고 하였다.
 
 ![](./16.png)
 
-이 인자는 `SelectionKey` 에 참조할 객체를 추가하는 메서드고 해당 키에 참조할 객체가 있으면 그 객체를 리턴하고, 없으면 null을 리턴한다. 
+이 인자는 셀렉션키에 참조할 객체를 추가하는 메서드고 해당 키에 참조할 객체가 있으면 그 객체를 리턴하고, 없으면 null을 리턴한다. 
 
 이 인자는 `attachement()` 메서드로 가져올 수 있으며, `register()` 로 등록이 가능하지만 `attach()` 메서드로도 등록할 수 있다.
 
 이 메서드의 사용 이유는 클라이언트마다 특정 세션 값 부여 및 접속을 오래 유지하지 않은 클라이언트에 그 처리를 담당하는 핸들러를 붙여서 사용하는 등의 용도로 사용된다고 한다.
 
-그러나, `attach()` 메서드로 첨부된 객체는 GC의 대상이 아니므로, `SelectionKey` 가 삭제될 때 같이 삭제해줘야 메모리 릭이 발생안한다.
+그러나, `attach()` 메서드로 첨부된 객체는 GC의 대상이 아니므로, 셀렉션키가 삭제될 때 같이 삭제해줘야 메모리 누수가 발생안한다.
 
 #### STEP 3.2.3 Selector
 
@@ -573,27 +601,27 @@ for (SelectionKey key : keys) {
 
 위에서 셀렉터에 대한 내용은 많이 언급했으니 중요한 특징만 설명하고자 한다.
 
-`Selector` 또한 등록된 이벤트를 처리하기 위해서는 자신에게 등록된 채널과 연관된 `SelectionKey` 에 대해서 알고 있어야할 것이다.  
+셀렉터 또한 등록된 이벤트를 처리하기 위해서는 자신에게 등록된 채널과 연관된 셀렉션키에 대해서 알고 있어야할 것이다.  
 
-그러므로 `Selector` 내부에는 `SelectionKey` 에 대한 집합을 가지고 있다.
-이 집합은 크게 세 가지이며, `Selector` 내부에서는 아래의 집합들을 관리한다.
+그러므로 셀렉터 내부에는 셀렉션키에 대한 집합을 가지고 있다.
+이 집합은 크게 세 가지이며, 셀렉터 내부에서는 아래의 집합들을 관리한다.
 
 1. **등록된 키 집합(Registered Key Set)**
-	+ `Selector` 에 등록된 모든 `SelectionKey` 의 집합이다. 하지만 이 집합에 있는 모든 키가 유효하지는 않다. 
+	+ 셀렉터에 등록된 모든 셀렉션키의 집합이다. 하지만 이 집합에 있는 모든 키가 유효하지는 않다. 
 	+ 메서드 : `Selector.keys()` 
 	
 2. **선택된 키 집합(Selected Key Set)**
 	+ 선택된 키 집합 ⊂ 등록된 키 집합
-	+  `SelectionKey` 가 수행 준비상태가 되서 **ready set**이 비어있지 않은 키들이 `Selector.select()` 메서드에 호출되서 선택됐을 때 이 집합에 추가된다.
+	+ 셀렉션키가 수행 준비상태가 되서 **ready set**이 비어있지 않은 키들이 `Selector.select()` 메서드에 호출되서 선택됐을 때 이 집합에 추가된다.
 	
 3. **취소된 키 집합(Cancelled Key Set)**
 	+ 취소된 키 집합 ⊂ 등록된 키 집합
 	+ 등록을 해제하고 싶을 때 `SelectionKey.cancel()` 메서드로 등록을 취소할 수 있는데 이 키는 바로 유효하지 않은 키로 설정되고 취소된 키 집합에 추가된다.
 
-주의사항으로는 `Selector` 는 쓰레드 세이프하지만, 세 가지 키 집합은 쓰레드 세이프하지 않으므로, 멀티쓰레드 환경에서 이 키에 접근하고자 하면 반드시 **동기화 처리**를 해줘야한다.
+주의사항으로는 셀렉터는 쓰레드 세이프하지만, 세 가지 키 집합은 쓰레드 세이프하지 않으므로, 멀티쓰레드 환경에서 이 키에 접근하고자 하면 반드시 **동기화 처리**를 해줘야한다.
 
 이제 셀렉터의 동작 원리에 대해서 살펴보고자 한다.
-`Selector`는 `select()` , `poll()` 과 같은 시스템 콜을 래핑한 것이다.
+셀렉터는 `select()` , `poll()` 과 같은 시스템 콜을 래핑한 것이다.
 
 실제 사용 방식은 `select()` 메서드를 호출하면서 사용되는데 다음과 같은 방식으로 동작한다.
 
@@ -606,12 +634,12 @@ for (SelectionKey key : keys) {
 	+ 만약 **ready set**이 비어있지 않은 `SelectionKey`가 존재한다면
 		+ 등록된 키 집합에 넣는다. (이미 존재한다면 그 키를 업데이트 처리만 한다.)
 		
-+ `Selector` **가** `selectedKeys()` **메서드를 호출한다. ··· ③**
-	+ 저장된 선택된 키 집합을 가져오고, 그 안에 저장된 `SelectionKey` 의 이벤트 형식에 따라 적절한 핸들러에게 처리를 넘긴다.
++ **셀렉터가** `selectedKeys()` **메서드를 호출한다. ··· ③**
+	+ 저장된 선택된 키 집합을 가져오고, 그 안에 저장된 셀렉션키의 이벤트 형식에 따라 적절한 핸들러에게 처리를 넘긴다.
 
 ① ~ ③의 동작과정을 반복하면서 진행하는데 그 실행 시점과 블록킹 여부 차이만 있다.
 
-`Selector` 가 제공하는 `select` 함수는 총 세가지이다. 
+셀렉터가 제공하는 `select` 함수는 총 세가지이다. 
 
 1. `select()` 
 	+ 블록킹되는 메서드이며, 선택된 키 집합이 비어있다면 키가 추가될 때까지 블록킹 된다. 그러다가 사용할 수 있는 키가 추가되면 ① ~ ③을 실행한다.
@@ -643,7 +671,12 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 
 + **블록킹(Blocking) I/O 및 동기(Synchronous) I/O 모델**
 
-![](./17.png)
+<p align="center">
+    <img src="./17.png">
+</p>
+<p align="center">
+    <em><a href="https://grip.news/archives/1304">그립뉴스, 논-블로킹 I/O, 비동기 I/O 차이 이해하기</a></em>
+</p>
 
 위의 그림을 보면 알겠지만 어플리케이션은 커널의 응답이 올 때까지 **블록킹** 된다. (다른 작업을 하지 못한다.) 
 
@@ -653,18 +686,30 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 
 + **논블록킹(Non-Blocking) I/O 모델**
 
-![](./18.png)
+<p align="center">
+    <img src="./18.png">
+</p>
+<p align="center">
+    <em><a href="https://grip.news/archives/1304">그립뉴스, 논-블로킹 I/O, 비동기 I/O 차이 이해하기</a></em>
+</p>
+
 
 논 블록킹은 위에서 보는 바와 같이 시스템 콜이 발생된 뒤에 이 응답이 끝날때 까지 기다리는 것이 아니라 제어권이 다시 어플리케이션에게 전달되는 것을 확인할 수 있다. 
 이때 주기적으로 I/O의 처리 가능한 상태를 판단하면서 다른 일을 수행한다.
 
-폴링 통신 방식과 흡사하다고 생각하면 된다. 
+폴링[^8] 통신 방식과 흡사하다고 생각하면 된다. 
 
 그렇다면, 비동기 I/O 모델이랑은 어떻게 다른 것일까?
 
 + **비동기(Asynchronous) I/O 모델**
 
-![](./19.png)
+
+<p align="center">
+    <img src="./19.png">
+</p>
+<p align="center">
+    <em><a href="https://grip.news/archives/1304">그립뉴스, 논-블로킹 I/O, 비동기 I/O 차이 이해하기</a></em>
+</p>
 
 가장 큰 차이점은 논블록킹 I/O 모델처럼 주기적으로 처리 여부를 응답하는 것이 아니라 커널에 시스템 콜을 한 뒤에 어플리케이션은 계속 다른 일을 하다가 커널이 **콜백** 으로 완료여부를 알려준다. 즉, **I/O 처리가 완료가 된 타이밍에 결과를 회신하는 모델**이다.
 
@@ -687,12 +732,17 @@ IO / NIO를 다루면서 자주 했던 말은 블록킹과 논블록킹이었다
 
 + **I/O 다중화 모델**
 
-![](./20.png)
+<p align="center">
+    <img src="./20.png">
+</p>
+<p align="center">
+    <em><a href="https://www.cs.toronto.edu/~krueger/csc209h/f05/lectures/Week11-Select.pdf">University of Toronto, I/O Multiplexing</a></em>
+</p>
 
-우리가 봤던 `Selector`와 `SelectionKey` 등의 개념을 기억하면서 위의 그래프를 살펴보자.  **select** 시스템 콜은 `Selector.select()` 라고 볼 수 있을 것이며 **data ready** 부분은 `SelectionKey` 의 **ready set** 이 존재하는 경우일 것이다.
+우리가 봤던 셀렉터와 셀렉션키 등의 개념을 기억하면서 위의 그래프를 살펴보자.  **select** 시스템 콜은 `Selector.select()` 라고 볼 수 있을 것이며 **data ready** 부분은 셀렉션키의 **ready set** 이 존재하는 경우일 것이다.
 
 즉, 우리가 공부한 NIO는 **I/O 다중화 모델**을 구현할 수 있는 객체들이다.
-이러한 개념들을 출발하여 오늘날 I/O 모델의 중심이라 볼 수 있는 이벤트 주도 아키텍처(Event-Driven Architecture)나 사가 패턴[^5]등이 탄생하였다고 볼 수 있다.
+이러한 개념들을 출발하여 오늘날 I/O 모델의 중심이라 볼 수 있는 이벤트 주도 아키텍처(Event-Driven Architecture)[^5]나 사가 패턴[^10]등이 탄생하였다고 볼 수 있다.
 
 
 ### STEP 4.2 간단한 채팅 어플리케이션 IO & NIO 예제
@@ -774,33 +824,42 @@ public class InputThread extends Thread {
 ...
 ```
 
-원래 기존에 블록킹이 되기 때문에 별도의 쓰레드를 둬서 처리한 부분을 `Selector` 로 처리하여 블록킹이 발생하지 않게 처리가 가능함을 볼 수 있다.
-
-위의 코드들은 좀 더 나은 코드로 바꾸면서 다음 포스팅에서는 리액터 및 프로리액터패턴과 적용하여 어떤 차이가 있는지 확인해보고자한다.
-
+원래 기존에 블록킹이 되기 때문에 별도의 쓰레드를 둬서 처리한 부분을 셀렉터로 처리하여 블록킹이 발생하지 않게 처리가 가능함을 볼 수 있다.
 
 # STEP 5. 정리 및 결론
 
-초기에 시스템 콜의 사용례를 알아보다가 I/O 쪽에서 많이 쓰인다는 것을 알게되었고,  이를 공부하다보니 동기 I/O, 비동기 I/O, 블록킹 I/O, 논블록킹 I/O 등을 알게되었다. 
+이 포스팅을 시작했을 때는 단순하게 시스템 콜의 실제 사용례를 자바에서 알고 싶어서 시작하였고, 그러다보니 I/O 쪽에서 많이 쓰인다는 것을 알게되었다.
 
-그러다가 스프링 웹 플럭스나 네티에 대해서 관심이 좀 있었는데 이번 기회에 논블록킹 I/O가 어떤 것이고, 어떻게 만들 수 있는지에 대해서 정리가 되서 좀 더 이해가 수월하지 않을까 생각이 든다.
+이전 포스팅에서는 왜 기존 자바 I/O가 느린 이유와 NIO가 대두되게된 원인들을 설명하였으며, 이번 포스팅에서는 이전 포스팅에서 기존 I/O들이 지원하지 않았던 네이티브 I/O 서비스들을 NIO가 지원하면서 I/O 성능을 끌어올렸음을 알 수 있었다.
 
-# Reference
-1. [Java NIO Buffer](http://tutorials.jenkov.com/java-nio/buffers.html)
-2. [ByteBuffer (Java SE 11 & JDK 11 )](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/nio/ByteBuffer.html)
-1. [번역 Java Reactor Pattern - 92Hz](https://jongmin92.github.io/2019/03/05/Java/java-reactor-pattern/)
-2. [쿠...sal: 컴 Reactor Pattern 에 대해 알아보자.](http://i5on9i.blogspot.com/2013/11/reactor-pattern.html)
-3. [쭌안아빠: proactor design pattern (번역)](https://jeremyko.blogspot.com/2012/05/proactor-design-pattern.html)
-4. [1 Reactor Pattern](https://riverandeye.tistory.com/entry/1-Reactor-Pattern)
-5. [Proactor pattern](https://kksuny.tistory.com/19)
-6. [Reactor Pattern 과 I/O Multiplexing (반응자 패턴, 입출력 다중화, select, epoll, 혼동 포인트, ProjectReactor)](https://sjh836.tistory.com/184)
-7. [리액터패턴 / 프로액터패턴](https://brunch.co.kr/@myner/42)
-8. [GitHub - kasun04/nio-reactor: A reference implementation of the Reactor Pattern with Java NIO.](https://github.com/kasun04/nio-reactor)
-9. http://www.dre.vanderbilt.edu/~schmidt/PDF/reactor-siemens.pdf
+하지만, 거기서 끝나지 않고 네트워크 프로그래밍과 결합하여 I/O 모델들이 다양한데 기존 I/O 방식은 블록킹이 되다보니 논블록킹 I/O 모델의 채널과 I/O 멀티플렉싱을 위한 멀티플렉서인 셀렉터를 토대로 I/O 멀티플렉싱 모델까지 알아보았다. 
 
-[^1]:[번역 Java Reactor Pattern - 92Hz](https://jongmin92.github.io/2019/03/05/Java/java-reactor-pattern/)
-[^2]:[Event-driven architecture - Wikipedia](https://en.wikipedia.org/wiki/Event-driven_architecture)
-[^3]:[Node.js Under The Hood #3 - Deep Dive Into the Event Loop - DEV Community](https://dev.to/_staticvoid/node-js-under-the-hood-3-deep-dive-into-the-event-loop-135d)
-[^4]:[I/O Multiplexing](https://www.cs.toronto.edu/~krueger/csc209h/f05/lectures/Week11-Select.pdf)
-[^5]:[Sagas](https://microservices.io/patterns/data/saga.html)
+요즘날에는 스프링 웹 플럭스나 네티에 대해서 많은 개발자들이 관심을 갖고 있다. 
 
+이번 기회에 I/O 멀티플렉싱과 논블록킹 I/O가 어떤 것이고, 어떻게 만들 수 있는지에 대해서 정리가 되서 좀 더 이해가 수월하지 않을까 생각이 든다.
+
+긴 포스팅을 읽어주셔서 감사합니다.
+
+# Reference 및 읽을거리
+1. [Java NIO Direct Buffer를 이용해서 대용량 파일 행 기준으로 쪼개기 - 뒤태지존의 끄적거림](https://homoefficio.github.io/2019/02/27/Java-NIO-Direct-Buffer%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%B4%EC%84%9C-%EB%8C%80%EC%9A%A9%EB%9F%89-%ED%8C%8C%EC%9D%BC-%ED%96%89-%EA%B8%B0%EC%A4%80%EC%9C%BC%EB%A1%9C-%EC%AA%BC%EA%B0%9C%EA%B8%B0/)
+2. [Java NIO Buffer](http://tutorials.jenkov.com/java-nio/buffers.html)
+3. [번역 Java Reactor Pattern - 92Hz](https://jongmin92.github.io/2019/03/05/Java/java-reactor-pattern/)
+4. [쿠...sal: 컴 Reactor Pattern 에 대해 알아보자.](http://i5on9i.blogspot.com/2013/11/reactor-pattern.html)
+5. [쭌안아빠: proactor design pattern (번역)](https://jeremyko.blogspot.com/2012/05/proactor-design-pattern.html)
+6. [1 Reactor Pattern](https://riverandeye.tistory.com/entry/1-Reactor-Pattern)
+7. [Proactor pattern](https://kksuny.tistory.com/19)
+8. [Reactor Pattern 과 I/O Multiplexing (반응자 패턴, 입출력 다중화, select, epoll, 혼동 포인트, ProjectReactor)](https://sjh836.tistory.com/184)
+9. [리액터패턴 / 프로액터패턴](https://brunch.co.kr/@myner/42)
+10. [GitHub - kasun04/nio-reactor: A reference implementation of the Reactor Pattern with Java NIO.](https://github.com/kasun04/nio-reactor)
+11. [Reactor - An Object Behavioral Pattern for
+Demultiplexing and Dispatching Handles for Synchronous Event](http://www.dre.vanderbilt.edu/~schmidt/PDF/reactor-siemens.pdf)
+
+[^1]:[Memory-mapped I/O - Wikipedia](https://en.wikipedia.org/wiki/Memory-mapped_I/O)
+[^2]:[File locking - Wikipedia](https://en.wikipedia.org/wiki/File_locking)
+[^3]:https://en.wikipedia.org/wiki/Gather-scatter_(vector_addressing)
+[^4]:[GitHub - kasun04/nio-reactor: A reference implementation of the Reactor Pattern with Java NIO.](https://github.com/kasun04/nio-reactor)
+[^5]:[Event-driven architecture - Wikipedia](https://en.wikipedia.org/wiki/Event-driven_architecture)
+[^6]:[Node.js Under The Hood #3 - Deep Dive Into the Event Loop - DEV Community](https://dev.to/_staticvoid/node-js-under-the-hood-3-deep-dive-into-the-event-loop-135d)
+[^7]:[I/O Multiplexing : 간단한 이론 - Phruse](https://phruse.com/iomt/)
+[^8]:[Polling(computer scinence)](https://en.wikipedia.org/wiki/Polling_(computer_science))
+[^9]:[Saga Pattern](https://microservices.io/patterns/data/saga.html)
