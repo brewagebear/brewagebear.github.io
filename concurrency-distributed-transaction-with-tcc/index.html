@@ -205,8 +205,8 @@
 <p align="center">
     <em>Real MySQL 8.0, p.182, 백은빈, 이성욱 저</em>
 </p>
-<p>그렇다면 낙관적 락은 어떻게 처리되는가?
-실제로 버전 컬럼이 존재하고, 이 버전을 토대로 트랜잭션이 진행되는데 먼저 진행된 트랜잭션으로 인해 버전이 변경되었고, 다음 트랜잭션은 이전 버전을 기준으로 수행 되기때문에 이 트랜잭션은 어보트된다.</p>
+<p>그렇다면 낙관적 락은 어떻게 처리되는가?</p>
+<p>실제로 버전 컬럼이 존재하고, 이 버전을 토대로 트랜잭션이 진행되는데 먼저 진행된 트랜잭션으로 인해 버전이 변경되었고, 다음 트랜잭션은 이전 버전을 기준으로 수행 되기때문에 이 트랜잭션은 어보트된다.</p>
 <p align="center">
     <span class="gatsby-resp-image-wrapper" style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; ">
       <span class="gatsby-resp-image-background-image" style="padding-bottom: 53.333333333333336%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAYAAAB/Ca1DAAAACXBIWXMAABYlAAAWJQFJUiTwAAACXklEQVQoz51STWsTURSdvTsX3bkRxJ8gVrsUrKigJWitXaiUolKwdNeFIrhS1IUf1I1Q3GhbrFhISkyaxtia2m9obC0Wv6qZScbJZD5f5r13j8w0TdGlBw738R6ce869T4GtW/BNwU2NgxgH0CD9U3coOUD1M3GSETaDIGhW+nMGLo6XqG+ihMF1gZ4pH5ff+nix4UOs9qM814Pax348/+zjSo6h552HZxvA9XmOq1kHNxYkBEEAgBAyrrQnbWoZ0elM0qFbS4IOj1bpwIhFd5ZsYvkT9DVxiNzp43R7sULNL01qGbXo5hLR6Tc1OjikU1uaExOQRAQhZVYBqwDCIrg6AAf/AQrNRQ6lzCid8RKODP2k9jEVd5cZTiZstI45eLJSAQod0KdOoZiN4Xe+DVjvwv0VhmNxF7G0j95FoCPtofV1RdwrhJJyUrmWc3A+ZVPv+xoG1iTOpRzEki4GP1nAWjfM2U6U8xdQTreB5TrxcK6KWMLB2eEi+lI2ujIeYuOWeLRWF4xM+ybBrQBg9QRBI8s2fgzMYyb2FNbwNPBdxbdLD/Cl+zGwqWErsgyXMqlwLuB7PlmWDbtqwvNciIBBSgnirEHfNODqJTCXQYZe6g0p+jcQohZASpFRSIjIiOt5pGoaimoRrlMFF6LhMNygvlrAr5kpmAsfYGVTMCbiMDLjMFIJEiVNRoE5n1QgBbZFQ1QMA5qqwnHsSIhIRhW8PobCMmb3N2Fi725k9zUhv2cXWOIVj3IzllQojCYEbZHvTC4UE+JvhndBACprkCUVshRVIt8L372gVjv6B2zeEmbUw4btAAAAAElFTkSuQmCC'); background-size: cover; display: block;"></span>
@@ -235,12 +235,13 @@
 <li>재고 처리</li>
 <li>결제 처리</li>
 </ol>
-<p>결제 요청 후에 재고 처리할 때, 만약 결제 처리가 API를 통해서 이뤄진다면 이 순서대로 이뤄지는 것이 아닐 수도 있다. 즉, 이미 결제가 성공된부분은 어떻게 처리할 것인가? 에 대한 문제가 존재한다.</p>
+<p>결제 요청 후에 재고 처리할 때, 만약 결제 처리가 API를 통해서 이뤄진다면 이 순서대로 이뤄지는 것이 아닐 수도 있다.</p>
+<p>즉, 이미 결제가 성공된부분은 어떻게 처리할 것인가? 에 대한 문제가 존재한다.</p>
 <p>이를 위해 원자적으로 프로세스를 순차적으로 처리하는 방식을 쓸 수 있다.
 이 때 사용할 수 있는 것이 비관적 락이다.</p>
 <h3 id="step-112-비관적-락pessimitic-lock" style="position:relative;"><a href="#step-112-%EB%B9%84%EA%B4%80%EC%A0%81-%EB%9D%BDpessimitic-lock" aria-label="step 112 비관적 락pessimitic lock permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 1.1.2 비관적 락(Pessimitic Lock)</h3>
-<p>비관적 락은 말 그대로 직접 락을 걸어서 하나의 작업만 처리되게끔 보장하는 것이다.
-하지만, 락을 직접 걸기 때문에 만약 고객들이 몰리는 상황에서는 느린 주문 경험을 사용자가 얻게 될 것이다.</p>
+<p>비관적 락은 말 그대로 직접 락을 걸어서 하나의 작업만 처리되게끔 보장하는 것이다.</p>
+<p>하지만, 락을 직접 걸기 때문에 만약 고객들이 몰리는 상황에서는 느린 주문 경험을 사용자가 얻게 될 것이다.</p>
 <p align="center">
     <span class="gatsby-resp-image-wrapper" style="position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 720px; ">
       <span class="gatsby-resp-image-background-image" style="padding-bottom: 53.333333333333336%; position: relative; bottom: 0; left: 0; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAYAAAB/Ca1DAAAACXBIWXMAABYlAAAWJQFJUiTwAAACBUlEQVQoz1VSO2/UQBD270IJFUjpoEBIVFCCACHxaECCigbq0FBBhMSjzul0QeScJol45AogKThEjlzOxud7+bmv70Nr+3LOSJ93Z3bmm9nP61BGM1Jokoo0qlwtoFDtUfkl5nmm7ls7klKecR588nmt4eHxbsK1LnjLTXijnfBdN6Pef8Tgy22Knw/5tpvz+pbknfaMT/bAjWPy7o7kTTfm6gHsQNTaNJwrzQmW3//DpfURnnY0zrkKyy2J550p8t2LOGyeRbp9Ac86MZY+EivtDJddYO2Xwfn1DEsfhrj/GaYgNMZ1WBqqldM3beYbnSJ0EqxM7xxw9LJFKlkP2zRtP8aYTScMRwyCIaRSxdHf1y79RqfIkjojjCa0KiqDrX3+ftGkSkTJoo2disaUVzbGtB2RJMzjGJCSWggqWkiaXFCJlFqkhJKE0rWZUDSB1iWU0jZWEDJNiMAHAp9p7w/7e9/o//hONfTI2Yhq5JNKMZeSg36fg6MeZ1F0SidovSCEEEQSA0lMS848ItOYec9j1vMYhz7TeMosTalkxiQaM4piClsHlPMuCDedeqP5Jg1Cbl9d5dd7rxj4Aw5Dj6GdmJrRbELP8zkej+uEZnHlUgdUWhS00WTK48Mep8Pw1F+2OYu2qGuoKsKWA/uEUFohdvmkFiTGnKA4r/llybwOqZRy5T8E2DnJ6QBD9wAAAABJRU5ErkJggg=='); background-size: cover; display: block;"></span>
@@ -317,12 +318,13 @@
 <ul>
 <li>두 가지 다른 벤더의 데이터베이스 혹은 카프카와 레디스와 같은 메시지 큐와 데이터베이스 사이의 트랜잭션 등으로 구성된 환경에서의 트랜잭션 (후자의 예시)</li>
 </ul>
-<p>이번에 주로 다룰 내용은 이종 분산 트랜잭션이다.
-메시지 큐를 통해서 재고차감 메시지를 발급하고 이를 컨슘하는 시스템이라 보면 될 것 같다.</p>
+<p>이번에 주로 다룰 내용은 이종 분산 트랜잭션이다.</p>
+<p>메시지 큐를 통해서 재고차감 메시지를 발급하고 이를 컨슘하는 시스템이라 보면 될 것 같다.</p>
 <p>이제 이에 대해서 설명하고자 한다.</p>
 <h1 id="step-3-카프카를-사용한-tcc-패턴-적용" style="position:relative;"><a href="#step-3-%EC%B9%B4%ED%94%84%EC%B9%B4%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%9C-tcc-%ED%8C%A8%ED%84%B4-%EC%A0%81%EC%9A%A9" aria-label="step 3 카프카를 사용한 tcc 패턴 적용 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 3. 카프카를 사용한 TCC 패턴 적용</h1>
 <h2 id="step-31-최종적-일관성eventaul-consistency란" style="position:relative;"><a href="#step-31-%EC%B5%9C%EC%A2%85%EC%A0%81-%EC%9D%BC%EA%B4%80%EC%84%B1eventaul-consistency%EB%9E%80" aria-label="step 31 최종적 일관성eventaul consistency란 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 3.1 최종적 일관성(Eventaul Consistency)란?</h2>
-<p>이 부분은 서두에서 말한 것과 같이 대부분의 코드와 매커니즘을 유용모님께서 작성한 컬럼에서 가져왔다. 원래 이 코드 자체에도 주문, 재고, 결제 서비스가 존재하지만 나는 여기서 주문, 재고 서비스만 가져왔다.</p>
+<p>이 부분은 서두에서 말한 것과 같이 대부분의 코드와 매커니즘을 유용모님께서 작성한 컬럼에서 가져왔다.</p>
+<p>원래 이 코드 자체에도 주문, 재고, 결제 서비스가 존재하지만 나는 여기서 주문, 재고 서비스만 가져왔다.</p>
 <p>자세한 부분은 <a href="https://github.com/YooYoungmo/article-tcc">REST 기반의 간단한 분산 트랜잭션 구현</a>을 참고하자.</p>
 <p>여기서 중점적으로 볼 사항은 <strong>최종적 일관성(Eventual Consistency)</strong><sup id="fnref-7"><a href="#fn-7" class="footnote-ref">7</a></sup>이다.</p>
 <p>위에서 말한거처럼 만약, 각각 서비스들이 외부 API로 처리될 경우에 결제가 실패할 경우에는 재고를 다시 늘려줘야하고, 결제가 성공했으나 결품일 경우에는 결제 취소를 해줘야할 것이다.</p>
@@ -352,23 +354,25 @@
 </p>
 <p>최신 값이 복제 중이지만 클라이언트는 오래된 값을 볼 수가 있다. 이렇게 함으로써 보다 유연한 확장이 가능하고, 성능도 어느정도 확보를 할 수 있다.</p>
 <p>위의 아티클에도 설명이 되어있지만, <strong>최종적 일관성은 몇 명이 좋아요를 눌렀는지?</strong> 와 같은데에서 사용할 수 있고, 강한 일관성은 <strong>게이머가 한 전투 세션에서 획득한 경험치</strong>와 같은 것으로 볼 수 있다.</p>
-<p>즉, 적절한 트레이드 오프가 필요하고, 분산 환경에서는 성능과 확장성 때문에 이러한 최종적 일관성을 적절하게 수용하고 있다고 볼 수 있다.</p>
+<p>즉, 적절한 트레이드 오프가 필요하고 분산 환경에서는 성능과 확장성 때문에 이러한 최종적 일관성을 적절하게 수용하고 있다고 볼 수 있다.</p>
 <p><strong>결국 지금은 일관성이 깨졌지만, 언젠가는 일관성이 맞춰진다</strong>는 것이 최종적 일관성의 모토라고 볼 수 있을 것같다.</p>
-<p>이를 실제 비즈니스 세계에 대입을 하면 요즘날 구독 서비스라고 볼 수도 있을 것 같다.
-유영모님도 나와 비슷한 경험을 원문에 적어두었는데 내가 겪은 최종적 일관성의 경험은 스포티파이를 이용하면서 였다.</p>
-<p>원래 결제되던 카드의 만료기한이 다되었고 귀찮아서 변경을 안했는데 계속 결제 재시도와 이메일로 알림이 왔었다. 하지만 서비스는 계속 되길래 그냥 썼었는데 어느 순간 재시도도 멈췄고 서비스 자체도 이용을 못하게 막았다. 그 후에 내가 다시 새로운 카드로 결제를 해서 서비스를 이용할 수 있었다.</p>
-<p>즉, 이 사용자가 결제가 제대로 이뤄지진 않았지만 언젠가 다시 결제를 하겠지라는 개념이라 볼 수 있고, 이것이 최종적 일관성이 아닐까 생각이 든다.</p>
+<p>이를 실제 비즈니스 세계에 대입을 하면 요즘날 구독 서비스라고 볼 수도 있을 것 같다.</p>
+<p>유영모님도 나와 비슷한 경험을 원문에 적어두었는데 내가 겪은 최종적 일관성의 경험은 스포티파이를 이용하면서 였다.</p>
+<p>원래 결제되던 카드의 만료기한이 다되었고 귀찮아서 변경을 안했는데 계속 결제 재시도와 이메일로 알림이 왔었다.</p>
+<p>하지만 서비스는 계속 되길래 그냥 썼었는데 어느 순간 재시도도 멈췄고 서비스 자체도 이용을 못하게 막았다.</p>
+<p>그 후에 내가 다시 새로운 카드로 결제를 해서 서비스를 이용할 수 있었다.</p>
+<p>즉, <strong>이 사용자가 결제가 제대로 이뤄지진 않았지만 언젠가 다시 결제를 하겠지</strong>라는 개념이라 볼 수 있고, 이것이 최종적 일관성이 아닐까 생각이 든다.</p>
 <p>아무튼, 위와 같이 카프카를 둬서 최종적 일관성을 유지할 수 있게끔 처리를 하였다고 볼 수 있다.</p>
 <p>하지만 기존 코드에서는 아쉽게도 서비스 단에서 잘못된 메시지가 발급될 경우에 대한 처리가 되어있지는 않았다. (현 재고보다 많은 수량의 주문이 요청이 오면 -로 재고가 잡혀버린다.)</p>
 <p>이 부분을 어떻게 처리할까 궁금했고, 사실 대부분의 코드는 비슷하고 이러한 처리 부분만 변경했다고 볼 수 있다고 생각한다.</p>
 <p>이제 이 부분에 대한 내용을 끝으로 이 포스팅을 마무리 지으려고 한다.</p>
 <h2 id="step-32-스프링-카프카-예외-처리-및-재시도-매커니즘" style="position:relative;"><a href="#step-32-%EC%8A%A4%ED%94%84%EB%A7%81-%EC%B9%B4%ED%94%84%EC%B9%B4-%EC%98%88%EC%99%B8-%EC%B2%98%EB%A6%AC-%EB%B0%8F-%EC%9E%AC%EC%8B%9C%EB%8F%84-%EB%A7%A4%EC%BB%A4%EB%8B%88%EC%A6%98" aria-label="step 32 스프링 카프카 예외 처리 및 재시도 매커니즘 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 3.2 스프링 카프카 예외 처리 및 재시도 매커니즘</h2>
-<p>카프카와 같은 메시지브로커에는 데드레터 큐<sup id="fnref-8"><a href="#fn-8" class="footnote-ref">8</a></sup>라는 개념이 존재한다.
-이는 올바르게 처리되지 못한 메시지를 저장하기 위한 큐라고 볼 수 있다.</p>
+<p>카프카와 같은 메시지브로커에는 데드레터 큐<sup id="fnref-8"><a href="#fn-8" class="footnote-ref">8</a></sup>라는 개념이 존재한다.</p>
+<p>이는 올바르게 처리되지 못한 메시지를 저장하기 위한 큐라고 볼 수 있다.</p>
 <p>즉, 올바르게 처리되지 못한 메시지를 데드레터라고 볼 수 있다.</p>
 <p>이를 테면, 우리 서비스에는 원래 적용되지 않았던 가용 재고보다 많은 재고의 요청 메시지가 제공된다면 이는 익셉션을 발생시킬 것이다. 이를 단순하게 커밋을 처리할 수 있지만, 이를 바로 커밋하기 보다는 데드레터 큐에 발급해서 로그를 남기는 용도로도 활용할 수 있을 것이다.</p>
-<p>또한, 네트워크 순단이나 기타 등의 문제로 올바른 메시지여도 처리를 못하는 케이스들이 존재할 것이다.
-이를 위해서 백오프를 둬서 재시도를 처리해야하고, 이때 처리가 안된다면 데드레터 큐로 옮기는 것이 올바를 것이다.</p>
+<p>또한, 네트워크 순단이나 기타 등의 문제로 올바른 메시지여도 처리를 못하는 케이스들이 존재할 것이다.</p>
+<p>이를 위해서 백오프를 둬서 재시도를 처리해야하고, 이때 처리가 안된다면 데드레터 큐로 옮기는 것이 올바를 것이다.</p>
 <p>정리를 하자면 아래와 같을 것이다.</p>
 <ol>
 <li>카프카에서 재고 차감 요청 발급</li>
@@ -450,8 +454,8 @@
 </tbody>
 </table>
 <p>따라서, 메시지가 요청이 들어올 때마다 <code class="language-text">Acknowledgement.acknowledge()</code> 을 호출해서 직접 커밋을 수행한다.  <code class="language-text">ConsumerFactory</code>는 빌드 설정값을 받아서 컨슈머 팩토리를 만드는 부분이다.</p>
-<p>예외 처리의 핵심은 <code class="language-text">factory.setCommonErrorHandler(kafkaListenerErrorHandler());</code> 부분이다.
-이 메서드만 따로 때서 다시 봐보자.</p>
+<p>예외 처리의 핵심은 <code class="language-text">factory.setCommonErrorHandler(kafkaListenerErrorHandler());</code> 부분이다.</p>
+<p>이 메서드만 따로 때서 다시 봐보자.</p>
 <ul>
 <li>kafkaListenerErrorHandler()</li>
 </ul>
@@ -493,7 +497,11 @@ DeadLetterPublishingRecoverer는 말 그대로 데드레터를 발급하는 리�
 </li>
 <li>defaultErrorHandler.setResetStateOnRecoveryFailure(false)
 <ul>
-<li>복구 실패한 메시지에 대해서 다음 시도에 재시도할 건지? (서비스 재부팅이 잦은 개발환경에서는 끄는게 마음이 편한듯)</li>
+<li>복구 실패한 메시지에 대해서 다음 시도에 재시도할 건지?
+<ul>
+<li>(서비스 재부팅이 잦은 개발환경에서는 끄는게 마음이 편한듯)</li>
+</ul>
+</li>
 </ul>
 </li>
 </ol>
@@ -569,10 +577,11 @@ Content-Type: application/json
 <p>자세한 매커니즘은 <code class="language-text">SeekUtils.seekOrRecover()</code>의 내부 메서드의 흐름을 파악해보면 알 수 있을 것이다.
 이로써 간단하게 카프카 사용 시에 위와 같은 에러 처리 시에 데드레터로 처리하는 방법을 알아 보았다.</p>
 <h1 id="결론" style="position:relative;"><a href="#%EA%B2%B0%EB%A1%A0" aria-label="결론 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>결론</h1>
-<p>동시성 문제의 발생원인부터 어떻게하면 이를 처리할 수 있는지에 대한 각각의 매커니즘과 분산 트랜잭션까지 알아보았다. 그리고 분산 트랜잭션에서 카프카를 사용할 때 서비스레이어 단에서 익셉션이 발생한 경우에 데드레터까지 처리하는 방법을 알아보았다.</p>
+<p>동시성 문제의 발생원인부터 어떻게하면 이를 처리할 수 있는지에 대한 각각의 매커니즘과 분산 트랜잭션까지 알아보았다.</p>
+<p>그리고 분산 트랜잭션에서 카프카를 사용할 때 서비스레이어 단에서 익셉션이 발생한 경우에 데드레터까지 처리하는 방법을 알아보았다.</p>
 <p>추가로 이 예제를 좀 더 발전 시켜서 배치를 붙여볼까 생각중이다.</p>
-<p>포스팅이 언제가 될지 모르기 때문에 위와 관련된 내용이 궁금하신 분들은 아래의 아티클을 추천한다.
-<a href="https://blog.devgenius.io/exceptions-and-retry-policy-in-kafka-6f0d3cf2c330">Exceptions and Retry Policy in Kafka</a> 카프카 어플리케이션에서 발생할 수 있는 에러들의 정의와 데드레터 등 다양한 내용을 담고 있다.</p>
+<p>포스팅이 언제가 될지 모르기 때문에 위와 관련된 내용이 궁금하신 분들은 아래의 아티클을 추천한다.</p>
+<p><a href="https://blog.devgenius.io/exceptions-and-retry-policy-in-kafka-6f0d3cf2c330">Exceptions and Retry Policy in Kafka</a> 카프카 어플리케이션에서 발생할 수 있는 에러들의 정의와 데드레터 등 다양한 내용을 담고 있다.</p>
 <p>이 중에서 내가 다음에 배치를 붙여서 작업할 내용은</p>
 <p align="center">
     <img src="https://miro.medium.com/max/1400/1*CJTVh1_CQuR-r4_7RUHhtQ.png">
@@ -581,7 +590,7 @@ Content-Type: application/json
     <em><a href="https://blog.devgenius.io/exceptions-and-retry-policy-in-kafka-6f0d3cf2c330">Exceptions and Retry Policy in Kafka, Victor Alekseev, 2021</a></em>
 </p>
 <p>위의 그림 중에 딜레이가 발생한 메시지나 실패한 메시지를 배치 처리를 통해서 재시도하는 처리를 해보려고 한다.</p>
-<p>긴 글인데 읽어주셔서 감사합니다.</p>
+<p>긴 글 읽어주셔서 감사합니다.</p>
 <h1 id="레퍼런스" style="position:relative;"><a href="#%EB%A0%88%ED%8D%BC%EB%9F%B0%EC%8A%A4" aria-label="레퍼런스 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>레퍼런스</h1>
 <ol>
 <li><a href="http://jaynewho.com/post/44">동시성 문제 - 비즈니스 애플리케이션 (Part 3)</a></li>
