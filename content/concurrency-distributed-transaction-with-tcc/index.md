@@ -1,10 +1,10 @@
 ---
 title: "동시성 문제 해결 전략 - 스프링으로 구현한 TCC패턴"
-date: 2022-06-03 15:00:00 +0900
+date: 2022-06-11 13:00:00 +0900
 tags:
   - Java
-  - JVM
-  - Core
+  - Kafka
+  - Concurrency Control
 emoji: 💻
 author: 개발한입
 categories: 개발 인프라
