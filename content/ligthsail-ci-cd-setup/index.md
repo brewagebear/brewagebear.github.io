@@ -39,19 +39,18 @@ categories: 개발 인프라
    <em>그림 1. 라이트세일 웹 콘솔</em>
 </p>
 
-Ligthsail(이하, 라이트세일)은 AWS에서 2016년에 공표한 서버 호스팅 서비스입니다.
+Ligthsail(이하, 라이트세일)은 AWS에서 2016년에 공표한 서버 호스팅 서비스이다.
 
-기존 AWS 서비스 중에 하나지만 SQS나 RDS 등과 달리 Ligthsail은 아예 독립적인 페이지를 갖고 있는 것을 볼 수가 있습니다.
+기존 AWS 서비스 중에 하나지만 SQS나 RDS 등과 달리 Ligthsail은 아예 독립적인 페이지를 갖고 있는 것을 볼 수가 있다.
 
-이렇게 구성된 이유는 기존 AWS가 너무 복잡하기 때문입니다. 
-실제로, 많이 사용하는 EC2 서비스의 경우에도 네트워크부터 스토리지까지 매우 다양한 옵션들이 존재하며, EC2를 실무에서 써본 분이라고 알겠지만 별도의 VPC와 같은 가상 네트워크가 필수가 되면서 점점 복잡도는 높아지고 있었습니다.
+이렇게 구성된 이유는 기존 AWS가 너무 복잡하기 때문인데 실제로, 많이 사용하는 EC2 서비스의 경우에도 네트워크부터 스토리지까지 매우 다양한 옵션들이 존재하며, EC2를 실무에서 써본 분이라고 알겠지만 별도의 VPC와 같은 가상 네트워크가 필수가 되면서 점점 복잡도는 높아지고 있다.
 
-이러한 복잡도를 낮추고 저렴하게 사용할 수 있는 서비스가 바로 라이트세일이라 볼 수 있습니다.
-저렴한 가격으로 큰 서버로 옮기게 될 경우에도 익숙한 환경에서 적응할 수 있는 엔트리 모델의 서비스라고 볼 수 있습니다.
+이러한 복잡도를 낮추고 저렴하게 사용할 수 있는 서비스가 바로 라이트세일이라 볼 수 있다.
+저렴한 가격으로 큰 서버로 옮기게 될 경우에도 익숙한 환경에서 적응할 수 있는 엔트리 모델의 서비스라고 볼 수 있다.
 
-실제로, 라이트세일은 나중에 EC2로 마이그레이션해주는 도구들과 고정 IP 및 저희가 뒤에 쓸 서비스 내용인 Ligthsail container 서비스도 제공해줍니다.
+실제로, 라이트세일은 나중에 EC2로 마이그레이션해주는 도구들과 고정 IP 및 저희가 뒤에 쓸 서비스 내용인 Ligthsail container 서비스도 제공해준다.
 
-글 작성 시점 기준으로 Ligthsail은 아래의 기능을 제공해줍니다. 
+글 작성 시점 기준으로 Ligthsail은 아래의 기능을 제공해준다. 
 
 1. 인스턴스 (기존 EC2와 비슷)
 2. 컨테이너 (기존 ECS과 비슷) 
@@ -59,30 +58,35 @@ Ligthsail(이하, 라이트세일)은 AWS에서 2016년에 공표한 서버 호�
 4. 네트워크 (고정 IP 할당 및 DNS 서비스 등)
 5. 스토리지 (기존 S3와 비슷)
 
-여기서 저희는 1번을 사용하는 것이 아닌 2번을 활용하여 Spring Boot Application을 Dockerize하여 배포파이프라인을 만들고 배포를 진행하는 식으로 진행해 볼 예정입니다.
+여기서 저희는 1번을 사용하는 것이 아닌 2번을 활용하여 Spring Boot Application을 Dockerize하여 배포파이프라인을 만들고 배포를 진행하는 식으로 진행해 볼 예정이다.
 
-사용을 해봤을 때 느낀점은 ECS 보다 매우 편리하고 관리하기도 매우 쉬웠습니다.
-또한, Github Actions API와 궁합도 잘맞아서 앞으로 사이드 프로젝트를 진행할 때 라이트세일 컨테이너를 쓰지않을까 생각해봅니다.
+사용을 해봤을 때 느낀점은 ECS 보다 매우 편리하고 관리하기도 매우 쉬웠다.
+또한, Github Actions API와 궁합도 잘맞아서 앞으로 사이드 프로젝트를 진행할 때 라이트세일 컨테이너를 쓰지않을까 생각해본다.
 
-좀 더 라이트세일에 대해서 궁금하시면 아래의 링크를 확인해주시면 좋을 것 같습니다.
+좀 더 라이트세일에 대해서 궁금하시면 아래의 링크를 확인해주시면 좋을 것 같다.
 
 1. [아마존 라이트세일(Amazon Lightsail)이란?](https://www.44bits.io/ko/keyword/amazon-lightsail)
 2. [AWS Lightsail - 라이트세일을 소개합니다., 운클라우드](https://wooncloud.tistory.com/96)
 3. [아마존 라이트세일 요금의 모든 것과 비용 관리 방법 (서버 및 리소스 가격 책정 방법) - 스위프트코딩](https://swiftcoding.org/all-about-amazon-lightsail-billing)
 
-저희는 라이트 세일 가격정책이나 서비스 내용이 중심이 아니기에 이 부분은 생략을 하고 배포 파이프라인 구축 및 빌드 관련된 이야기를 나눠보고자 합니다.
+저희는 라이트 세일 가격정책이나 서비스 내용이 중심이 아니기에 이 부분은 생략을 하고 배포 파이프라인 구축 및 빌드 관련된 이야기를 나눠보고자 한다.
 
 ## STEP 2. AWS Ligthsail과 Github를 이용한 CI/CD 파이프라인 구축 예시
 
-위에서 잠깐 언급한 내용처럼 저희는 라이트세일 컨테이너 서비스와 Github Action을 활용하여 CI/CD 파이프라인을 구축하고자합니다.
+위에서 잠깐 언급한 내용처럼 저희는 라이트세일 컨테이너 서비스와 Github Action을 활용하여 CI/CD 파이프라인을 구축한다.
 
-대상이 될 어플리케이션은 간단한 스프링부트 어플리케이션을 활용할 예정입니다.
+대상이 될 어플리케이션은 간단한 스프링부트 어플리케이션을 활용할 예정이다.
+
+상세한 프로젝트 코드는 아래를 참고하자.
+
++ [brewagebear/blog-example/lightsail-example](https://github.com/brewagebear/blog-example/tree/main/ligthsail-example)
+
 
 ### STEP 2.1. Spring Boot Application Dockerize 
 
-우선, 라이트세일 컨테이너 서비스에 배포를 하기 위해서는 기존 스프링 부트 어플리케이션을 도커라이징해야합니다. 
+우선, 라이트세일 컨테이너 서비스에 배포를 하기 위해서는 기존 스프링 부트 어플리케이션을 도커라이징해야한다.
 
-예제 샘플(Dockerfile)은 아래와 같습니다.
+예제 샘플(Dockerfile)은 아래와 같다.
 
 ```sh
 # syntax=docker/dockerfile:experimental
@@ -107,7 +111,7 @@ COPY --from=build-stage ${DEPENDENCY}/BOOT-INF/classes ./app/
 ENTRYPOINT ["java","-cp","app:app/lib/*","io.github.brewagebear.LigthsailApp"]
 ```
 
-어려워 보일 수 있으나 한가지씩 뜯어보면 그렇게 어렵지 않습니다.
+어려워 보일 수 있으나 한가지씩 뜯어보면 그렇게 어렵지 않다.
 
 ### STEP 2.1.1. Docker Buildkit 
 
@@ -117,10 +121,10 @@ ENTRYPOINT ["java","-cp","app:app/lib/*","io.github.brewagebear.LigthsailApp"]
 이 부분은 [moby/buildkit - syntax](https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/reference.md#syntax)에서 내용을 확인할 수 있다.
 즉, 위의 주석은 Buildkit을 활용하여 도커를 빌드할 때 실험적 기능을 키기 위한 옵션 주석이라고 볼 수 있다.
 
-그렇다면, BuildKit은 무엇일까?
+그렇다면, **BuildKit은 무엇일까?**
 Docker 18.09버전부터 지원되기 시작한 백엔드 도구라고 한다.
 
-백엔드 도구와 프론트 엔드에 대해서 이해를 하기 전에 BuildKit 프로젝트가 만들어진 계기를 간략하게 설명하면 아래와 같다.
+도커의 백엔드와 프론트엔드까지 다루기에는 양이 방대해져서 이 내용은 생략하고, 대략적으로 BuildKit에 장점에 대해서 기존까지의 도커 빌드 히스토리를 추적하여 설명하고자 한다.
 
 <p align="center">
     <img src="./single-build.png">
@@ -168,8 +172,6 @@ Docker 18.09버전부터 지원되기 시작한 백엔드 도구라고 한다.
 
 당연히 BuildKit이 이 역할만 하는 애는 아니다.
 따라서, BuildKit이 해당 기능을 위해서만 나온건 아니고, 전반적인 빌드 속도나 기타 편의기능들을 추가한 도구라고 보면될 것 같다.
-
-자세한 내용은 
 
 [공식 레포지토리](https://github.com/moby/buildkit#quick-start)를 보면 아래와 같은 핵심 기능을 설명하고 있다.
 
@@ -535,6 +537,10 @@ Github Action을 사용하고자 하였다.
 그 뒤에 Github Action의 배포 스크립트를 통해서 실제 배포를 진행하였다.
 많은 과정을 겪었는데, 한번 익숙해지면 금방 할 수 있지 않을까 싶다.
 
+--- 
+
+## PS
+
 위의 내용 중 상당 부분을 아래의 레포지토리를 참고하였습니다.
 
 + [arch-inc/amazon-lightsail-containers-test](https://github.com/arch-inc/amazon-lightsail-containers-test)
@@ -551,6 +557,8 @@ Github Action을 사용하고자 하였다.
 2. [brewagebear/blog-example/lightsail-example](https://github.com/brewagebear/blog-example/tree/main/ligthsail-example)
 
 모쪼록 긴 글이지만 읽어주셔서 감사합니다.
+
+---
 
 ## STEP 4. REFERENCE 
 
