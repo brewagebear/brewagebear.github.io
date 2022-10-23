@@ -545,9 +545,12 @@ Github Action을 사용하고자 하였다.
 
 일어라 저는 파파고로 번역해서 읽었습니다.
 
+프로젝트 전체 예시는 아래에서 확인하실 수 있습니다.
+
+1. [Github Action 배포 스크립트](https://github.com/brewagebear/blog-example/blob/main/.github/workflows/deploy.yml)
+2. [brewagebear/blog-example/lightsail-example](https://github.com/brewagebear/blog-example/tree/main/ligthsail-example)
 
 모쪼록 긴 글이지만 읽어주셔서 감사합니다.
-
 
 ## STEP 4. REFERENCE 
 
