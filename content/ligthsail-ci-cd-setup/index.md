@@ -1,5 +1,5 @@
 ---
-title: "AWS Ligthsail과 Github를 이용한 CI/CD 파이프라인 구축 예시"
+title: "AWS Lightsail과 Github를 이용한 CI/CD 파이프라인 구축 예시"
 date: 2022-10-23 17:00:00 +0900
 tags:
   - Java
@@ -15,22 +15,22 @@ categories: 개발 인프라
 이직을 한 후에 너무 바쁘다보니 블로그 포스팅을 신경을 쓰지 못하였다.
 아직도 바쁘긴하지만, 그래도 여유가 조금씩 생기고 있어서 틈틈히 썼던 초안을 다듬어서 올려보려고 노력해보겠다.
 
-이번 포스팅의 내용은 AWS Ligthsail와 Github를 통한 CI/CD 구축 예시이다.
+이번 포스팅의 내용은 AWS Lightsail와 Github를 통한 CI/CD 구축 예시이다.
 
-# AWS Ligthsail과 Github를 이용한 CI/CD 파이프라인 구축 예시
+# AWS Lightsail과 Github를 이용한 CI/CD 파이프라인 구축 예시
 
-+ STEP 1. AWS Ligthsail란?
-+ STEP 2. AWS Ligthsail과 Github를 이용한 CI/CD 파이프라인 구축 예시
++ STEP 1. AWS Lightsail란?
++ STEP 2. AWS Lightsail과 Github를 이용한 CI/CD 파이프라인 구축 예시
   + STEP 2.1. Spring Boot Application Dockerize 
     + STEP 2.1.1. Docker Buildkit 
-  + STEP 2.2 Ligthsail 배포 전 사전 작업
+  + STEP 2.2 Lightsail 배포 전 사전 작업
     + STEP 2.2.1 IAM 계정 생성
     + STEP 2.2.2 Github Secret을 통한 보안 작업
   + STEP 2.3 Github Deploy.yml 파일 작성
 + STEP 3. 정리
 + STEP 4. REFERENCE
 
-## STEP 1. AWS Ligthsail란?
+## STEP 1. AWS Lightsail란?
 
 <p align="center">
     <img src="./lightsail-dashboard.png">
@@ -39,18 +39,18 @@ categories: 개발 인프라
    <em>그림 1. 라이트세일 웹 콘솔</em>
 </p>
 
-Ligthsail(이하, 라이트세일)은 AWS에서 2016년에 공표한 서버 호스팅 서비스이다.
+Lightsail(이하, 라이트세일)은 AWS에서 2016년에 공표한 서버 호스팅 서비스이다.
 
-기존 AWS 서비스 중에 하나지만 SQS나 RDS 등과 달리 Ligthsail은 아예 독립적인 페이지를 갖고 있는 것을 볼 수가 있다.
+기존 AWS 서비스 중에 하나지만 SQS나 RDS 등과 달리 Lightsail은 아예 독립적인 페이지를 갖고 있는 것을 볼 수가 있다.
 
 이렇게 구성된 이유는 기존 AWS가 너무 복잡하기 때문인데 실제로, 많이 사용하는 EC2 서비스의 경우에도 네트워크부터 스토리지까지 매우 다양한 옵션들이 존재하며, EC2를 실무에서 써본 분이라고 알겠지만 별도의 VPC와 같은 가상 네트워크가 필수가 되면서 점점 복잡도는 높아지고 있다.
 
 이러한 복잡도를 낮추고 저렴하게 사용할 수 있는 서비스가 바로 라이트세일이라 볼 수 있다.
 저렴한 가격으로 큰 서버로 옮기게 될 경우에도 익숙한 환경에서 적응할 수 있는 엔트리 모델의 서비스라고 볼 수 있다.
 
-실제로, 라이트세일은 나중에 EC2로 마이그레이션해주는 도구들과 고정 IP 및 저희가 뒤에 쓸 서비스 내용인 Ligthsail container 서비스도 제공해준다.
+실제로, 라이트세일은 나중에 EC2로 마이그레이션해주는 도구들과 고정 IP 및 저희가 뒤에 쓸 서비스 내용인 Lightsail container 서비스도 제공해준다.
 
-글 작성 시점 기준으로 Ligthsail은 아래의 기능을 제공해준다. 
+글 작성 시점 기준으로 Lightsail은 아래의 기능을 제공해준다. 
 
 1. 인스턴스 (기존 EC2와 비슷)
 2. 컨테이너 (기존 ECS과 비슷) 
@@ -71,7 +71,7 @@ Ligthsail(이하, 라이트세일)은 AWS에서 2016년에 공표한 서버 호�
 
 저희는 라이트 세일 가격정책이나 서비스 내용이 중심이 아니기에 이 부분은 생략을 하고 배포 파이프라인 구축 및 빌드 관련된 이야기를 나눠보고자 한다.
 
-## STEP 2. AWS Ligthsail과 Github를 이용한 CI/CD 파이프라인 구축 예시
+## STEP 2. AWS Lightsail과 Github를 이용한 CI/CD 파이프라인 구축 예시
 
 위에서 잠깐 언급한 내용처럼 저희는 라이트세일 컨테이너 서비스와 Github Action을 활용하여 CI/CD 파이프라인을 구축한다.
 
@@ -255,7 +255,7 @@ RUN --mount=type=cache,target=/root/.gradle ls -alh /root/.gradle; ./gradlew cle
 
 BuildKit에 대해서는 더 할 말이 많은데, 포스팅의 길이가 길어질 것 같아서 우리가 사용하는 기능에 대해서만 다루고 다음으로 넘어가고자 한다.
 
-## STEP 2.2 Ligthsail 배포 전 사전 작업
+## STEP 2.2 Lightsail 배포 전 사전 작업
 
 일단, 위에서 `Dockerfile`을 Buildkit의 캐시기능을 활용한 멀티스테이징 빌드기법으로 만들었다. 
 
@@ -263,7 +263,7 @@ BuildKit에 대해서는 더 할 말이 많은데, 포스팅의 길이가 길어
 
 그 전에 사전작업 몇 가지를 진행하고자한다.
 
-1. LigthSail IAM 계정 설정
+1. Lightsail IAM 계정 설정
 
 이 부분은 보안 상 이점을 가져가기 위해서 ROOT 계정이 아닌 서비스용 IAM 계정을 발급하는 내용이다.
 
