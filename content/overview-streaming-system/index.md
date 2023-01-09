@@ -171,7 +171,12 @@ categories: 개발
 <p align="center">
 <em>그림 4. 메시지와 이벤트</em>
 </p>
-따라서, 목적지와 수신지를 처리하기 위해서는 메시지가 필요하고, 메시지안에 이벤트가 담기는 형식이라고 생각한다. 자세한 내용은 [LightBend - Events ars messages](https://developer.lightbend.com/docs/akka-guide/concepts/message-driven-event-driven.html#_events_are_messages) 내용을 읽어보도록 하자. 여기서도 메시지 주도 아키텍처는 보다 시스템 구성 요소적인 측면이 강하고, 이벤트 주도 아키텍처가 보다 추상화된 내용이라고 말한다. 
+따라서, 목적지와 수신지를 처리하기 위해서는 메시지가 필요하고, 메시지안에 이벤트가 담기는 형식이라고 생각한다. 
+
+자세한 내용은 
+[LightBend-Events ars messages](https://developer.lightbend.com/docs/akka-guide/concepts/message-driven-event-driven.html#_events_are_messages) 내용을 읽어보도록 하자. 
+
+여기서도 메시지 주도 아키텍처는 보다 시스템 구성 요소적인 측면이 강하고, 이벤트 주도 아키텍처가 보다 추상화된 내용이라고 말한다. 
 
 > 즉, 메시지 주도 아키텍처로도 이벤트 주도 아키텍처를 구현할 수 있다.
 > So, using Message Driven tools we can build an Event Driven system.
