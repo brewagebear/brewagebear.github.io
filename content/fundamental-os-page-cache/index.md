@@ -410,6 +410,7 @@ vm.dirty_ratio
 5. [메모리 재할당과 커널 파라미터 - 강진우](https://brunch.co.kr/@alden/14)
 6. [Just say no to swapping! - Michael McCandless](https://blog.mikemccandless.com/2011/04/just-say-no-to-swapping.html)
 7. [Elasticsearch 캐싱 심층 분석 : 한 번에 하나의 캐시로 쿼리 속도 향상 - elastic.co](https://www.elastic.co/kr/blog/elasticsearch-caching-deep-dive-boosting-query-speed-one-cache-at-a-time)
+8. [dirty page 동기화 #1 - 강진우님](https://brunch.co.kr/@alden/32)
 
 [^1]: [Block Devices - Wikipedia](https://en.wikipedia.org/wiki/Device_file#Block_devices)
 [^2]: [Disk cache - Wikipedia](https://en.wikipedia.org/wiki/Disk_cache)
