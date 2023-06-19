@@ -1,5 +1,0 @@
-{
-    "componentChunkName": "component---src-templates-category-template-js",
-    "path": "/posts/개발,",
-    "result": {"pageContext":{"currentCategory":"개발,","categories":["All","개발,","인프라","개발","독서요약"],"edges":[{"node":{"id":"174ae09d-f54c-5e52-9b16-a17b05c7b0c0","excerpt":"STEP 1.1 과거의 이야기 STEP 1.2 번외) NVMe를 스왑 영역으로 잡으면 RAM과 속도가 비슷할까? STEP 2.1 운영체제의 캐시 영역과 스와핑 STEP 2.1.1 캐시영역 STEP 2.1.2 스와핑 STEP 2.1.3 운영체제의 메모리 재할당 방식 STEP 2.2 자바, 페이지 캐시 그리고 가비지 컬렉션 STEP 2.2.1 페이지 캐시와 더티 페이지 동기화 STEP 2.2.2 자바 메모리와 가비지 컬렉션 STEP 1. 서론 STEP 1.1 과거의 이야기 STEP 1.2 번외) NVMe를 스왑 영역으로 잡으면 RAM과 속도가 비슷할까? STEP 2. 본론 STEP 2.1 운영체제의 캐시 영역과 스와핑 STEP 2.1.1 캐시영역 STEP 2.1.2 스와핑 STEP 2.1.3 운영체제의 메모리 재할당 방식 STEP 2.2 자바, 페이지 캐시 그리고 가비지 컬렉션 STEP 2.2.1 페이지 캐시와 더티 페이지 동기화 STEP 2.2.2 자바 메모리와 가비지 컬렉션 STE…","fields":{"slug":"/fundamental-os-page-cache/"},"frontmatter":{"categories":"개발, 인프라","title":"왜 처리량이 중요한 JVM 어플리케이션은 vm.swappiness = 1로 설정하라고 할까?","date":"June 19, 2023"}},"next":{"fields":{"slug":"/overview-streaming-system/"}},"previous":null}]}},
-    "staticQueryHashes": ["1073350324","1956554647","2938748437"]}
