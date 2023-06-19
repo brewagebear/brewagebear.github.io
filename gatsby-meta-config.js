@@ -13,7 +13,7 @@ module.exports = {
   author: {
     name: `Bear`,
     bio: {
-      role: `백엔드 엔지니어`,
+      role: `소프트웨어 엔지니어`,
       description: ['즐겁게 개발하는'],
       thumbnail: 'calcifer.gif', // Path to the image in the 'asset' folder
     },
