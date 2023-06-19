@@ -7,7 +7,7 @@ tags:
   - Fundamental
 emoji: 💻
 author: 개발한입
-categories: 개발, 인프라 
+categories: 개발 인프라 
 ---
 
 ```toc
