@@ -188,7 +188,7 @@ OS 레벨에서의 스와핑은 위와 같이 동작을 한다.
 
 그림 4는 기본적인 OS의 스와핑(Swapping)방식이다. 하지만, 가상 메모리(스왑 영역)는 **프로세스 단위로 스와핑을 하는 것이 아니라 페이지 단위로 스와핑**한다.
 
-그림 2에 나와있는 캐시 영역은 사실 페이지 캐시(Page Cache)[^3] 를 통해서 관리되는데, 이는 후술할 내용이므로 그냥 단순하게 우리가 보고자하는 **캐시 영역에서 스왑 영역으로 이동되는 스와핑은 데이터가 디스크에 적재**된다고 보면 될 것 같다. 
+그림 2에 나와있는 캐시 영역은 사실 페이지 캐시(Page Cache)[^3] 를 통해서 관리되는데, 이는 후술할 내용이므로 그냥 단순하게 **캐시 영역에서 스왑 영역으로 이동되는 스와핑은 데이터가 디스크에 적재**된다고 보면 될 것 같다. 
 
 이 부분에 대해서 좀 더 깊게 알고 싶다면 아래의 링크를 참고하자. 
 + [운영체제(OS) 스와핑(swapping), 가상메모리(virtual memory) 란? - 빠르고 꾸준하게](https://resilient-923.tistory.com/397)
@@ -352,6 +352,8 @@ vm.dirty_ratio
 
 자 이때 가용 메모리가 부족하여 재할당 과정이 발생한다고 가정해보자. 그러면 이미 많은 양의 페이지 캐시가 생성되어있으므로 그만큼 재할당을 하는 과정이 느려질 것이고, 더티페이지 커널 파라미터도 별도 튜닝을 안했다면 Disk I/O도 많이 발생할 것이다. 
 
+해당 이슈는 위와 같은 이유때문에 느려진 것이 않을까? 추론할 수 있을 것이다.
+
 자 이제, JVM 상에서 동작하는 어플리케이션들 중에서 처리량이 높아야하는 요구사항을 지닌 것들은 운영체제의 페이지 캐시를 사용하는 것을 이해할 수 있었다. 이유는 자바 메모리의 특성과 연관이 되어있었다. 
 
 그러면, 왜 스왑은 쓰면 안될까? 이 내용은 사실 GC와 관련이 있다.
@@ -400,6 +402,36 @@ vm.dirty_ratio
 
 긴 글 읽느라 다들 고생 많으셨습니다.
 
+## STEP 3.1 추신 
+
+이 내용을 정리한 계기가 되었던 부분은 아래의 글 때문입니다.
++ [Just say no to swapping! - Michael McCandless](https://blog.mikemccandless.com/2011/04/just-say-no-to-swapping.html)
+
+근데, 해당 글이 작성년도는 2011년으로 확인됩니다. (Java 7 사용 시점쯤에 작성된 글)
+그러나, 결론 부에 제가 그린 그림은 G1GC의 Region과 같이 구성되어있습니다.
+
+이 부분에 대해서 제가 실제 검증은 하지 않았지만, 현재까지도 위와 같이 발생할 수 있는 문제가 있지않을까? 추론해서 그린 그림입니다. 그러면 해당 추론이 합리적일까요?
+
+1. [Memory and JVM Tuning - GridGain Doc](https://www.gridgain.com/docs/latest/perf-troubleshooting-guide/memory-tuning#tune-swappiness-setting)
+
+위 가이드에서는 아래와 같이 작성되어있습니다.
+
+> The value of this setting can prolong GC pauses as well. 
+> For instance, if your GC logs show low user time, high system time, long GC pause records, it might be caused by Java heap pages being swapped in and out. To address this, use the swappiness settings above.
+
+따라서, 실제 GC 시간이 스왑-인/아웃으로 느려질 수 있다는 점을 시사한다고 봅니다.
+
+2. [Design of Swap-aware Java Virtual Mache Garbage Collector Policy](https://www.slideshare.net/HyojeongLee6/paperdesign-of-swapaware-java-virtual-machine-garbage-collector-policy)
+
+위 링크는 JVM GC 중에 발생하는 시스템 스왑의 영향도와 그것에 대한 해결법에 대한 논문의 요약 슬라이드입니다.
+
+논문 자체를 보진 않아서 슬라이드만 참고하면 G1GC는 아니고 Parallel GC(Mark-and-Summary Compaction이 슬라이드 뒷편에 기술되어있어서) 기준인거 같긴합니다. 어찌됐든 GC와 스왑영역에 대해서 확실한 영향도가 있음을 시사하고 있습니다.
+
+3. [Tuning Java application on Linux](https://www.mastertheboss.com/java/tuning-java-applications-on-linux/)
+
+해당 링크에서는 자바 어플리케이션이 현재 스왑을 사용하는지 확인할 수 있는 스크립트를 제공해주고, 병목지점으로 스왑이 식별될 시 대처법을 설명하고 있습니다.
+
+위 같은 다양한 사례를 보면 G1GC에도 충분히 적용될 사례로 보이는데 시간이 난다면 해당 내용에 대한 검증을 추가해보겠습니다.
 
 # STEP 4. 참고자료 
 
@@ -407,10 +439,13 @@ vm.dirty_ratio
 2. [Why are swap partitions discouraged on SSD drives, are they harmful?](https://askubuntu.com/questions/652337/why-are-swap-partitions-discouraged-on-ssd-drives-are-they-harmful)
 3. [Ubuntu Linux Hibernation](https://kwonnam.pe.kr/wiki/linux/ubuntu/hibernation)
 4. [운영체제(OS) 스와핑(swapping), 가상메모리(virtual memory) 란? - 빠르고 꾸준하게](https://resilient-923.tistory.com/397)
-5. [메모리 재할당과 커널 파라미터 - 강진우](https://brunch.co.kr/@alden/14)
+5. [메모리 재할당과 커널 파라미터 - 강진우님](https://brunch.co.kr/@alden/14)
 6. [Just say no to swapping! - Michael McCandless](https://blog.mikemccandless.com/2011/04/just-say-no-to-swapping.html)
 7. [Elasticsearch 캐싱 심층 분석 : 한 번에 하나의 캐시로 쿼리 속도 향상 - elastic.co](https://www.elastic.co/kr/blog/elasticsearch-caching-deep-dive-boosting-query-speed-one-cache-at-a-time)
 8. [dirty page 동기화 #1 - 강진우님](https://brunch.co.kr/@alden/32)
+9. [Memory and JVM Tuning - GridGain Doc](https://www.gridgain.com/docs/latest/perf-troubleshooting-guide/memory-tuning#tune-swappiness-setting)
+10. [Design of Swap-aware Java Virtual Mache Garbage Collector Policy](https://www.slideshare.net/HyojeongLee6/paperdesign-of-swapaware-java-virtual-machine-garbage-collector-policy)
+11. [Tuning Java application on Linux](https://www.mastertheboss.com/java/tuning-java-applications-on-linux/)
 
 [^1]: [Block Devices - Wikipedia](https://en.wikipedia.org/wiki/Device_file#Block_devices)
 [^2]: [Disk cache - Wikipedia](https://en.wikipedia.org/wiki/Disk_cache)
