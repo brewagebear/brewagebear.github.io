@@ -21,22 +21,22 @@ categories: 개발
     - STEP 2.2 힙 영역
     - STEP 2.3 번외) 자바에서 레퍼런스 타입을 사용할 때 주의해야할 점
 - STEP 3. 실행 엔진 
-    - STEP 3.1 GC(Garbage Collector)
-      - STEP 3.1.1 Garbage Collections roots (GC Root Set)
-    - STEP 3.2 식별 알고리즘(Marking Algorithm)
-      - STEP 3.2.1 스탑-더-월드(Stop-The-World, STW)
-      - STEP 3.2.2 레퍼런스 카운팅(Reference Counting)
-    - STEP 3.3 정리 알고리즘(Sweep Algorithm)
-        - STEP 3.3.1 기본 정리 알고리즘(Normal Sweeping, Mark-and-Sweep Algorithm)
-        - STEP 3.3.2 압축-정리 알고리즘(Sweeping with compacting, Mark-and-Compaction Algorithm)
-        - STEP STEP 3.3.3 복제-정리 알고리즘(Sweeping with compacting, Copying Algorithm)
+    - STEP 3.1 GC
+      - STEP 3.1.1 Garbage Collections roots
+    - STEP 3.2 식별 알고리즘
+      - STEP 3.2.1 스탑-더-월드
+      - STEP 3.2.2 레퍼런스 카운팅
+    - STEP 3.3 정리 알고리즘
+        - STEP 3.3.1 기본 정리 알고리즘
+        - STEP 3.3.2 압축-정리 알고리즘
+        - STEP STEP 3.3.3 복제-정리 알고리즘
     - STEP 3.4 GC 알고리즘 중간 정리 
     - STEP 3.5 Generational Algorithm 
     - STEP 3.6 Heap의 구조와 GC의 기본 동작 
 - STEP 4. 메서드 영역(메타스페이스 영역)
   - STEP 4.1 자바 8 이전과 이후의 메서드 영역
   - STEP 4.2 메서드 영역에서의 GC 동작
-- STEP 5. 가비지 수집기(GC, Garbage Collector)
+- STEP 5. 가비지 수집기
   - STEP 5.1 Serial GC
   - STEP 5.2 Parallel GC
   - STEP 5.3 CMS(Concurrent Mark & Sweep) GC
