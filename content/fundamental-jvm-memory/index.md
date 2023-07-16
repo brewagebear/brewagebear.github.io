@@ -58,9 +58,15 @@ categories: 개발
 
 예전에 한번 GC 알고리즘에 대해서 다루고자 한다 했는데 너무 시간이 지났다. 그래서 이왕 시간이 많이 지난거 한번에 모든 걸 담아보면 어떨까? 라는 생각으로 글을 작성하였고, 이 때문에 장문의 글이 되어버렸다. 거기다가 최신 GC인 ZGC는 내용의 압박으로 인하여 일단 패스했는데 만약 추가하게 되면 개요에 추가하도록 하겠다.
 
-추가로 이번 내용의 대부분은 [Java Performance Fundamental, 김한도 저, 2009](https://www.yes24.com/Product/Goods/3577335), [Java Memory Management: A comprehensive guide to garbage collection and JVM tuning, Maaike van Putten, 2022](https://a.co/d/3vI0AU4) 이 두가지 책을 많이 참고하였다.
+추가로 이번 내용의 대부분은 아래의 책들을 참고하였다.
 
-특히, Java Performance Fundamental은 10년이 지난 지금에도 바이블이라고 생각한다. 이 책을 꼭 읽어보기를 추천한다. 주의할 점은 이 책이 나온 시점에는 Java 1.5 ~ 1.6 시절이므로 그걸 감수하면서 달라진 내용을 팔로우하면서 봐야한다는 점이다. Java Memory Management라는 책 또한, 볼륨이 상대적으로 적은데 (대략 220쪽분량) 핵심적인 내용들과 내가 궁금한 부분들에 대해서는 전부 다 녹여져 있었다.
+1. [Java Performance Fundamental, 김한도 저, 2009](https://www.yes24.com/Product/Goods/3577335)
+
+2. [Java Memory Management: A comprehensive guide to garbage collection and JVM tuning, Maaike van Putten, 2022](https://a.co/d/3vI0AU4)
+
+특히, Java Performance Fundamental은 10년이 지난 지금에도 바이블이라고 생각한다. 이 책을 꼭 읽어보기를 추천한다. 
+
+주의할 점은 이 책이 나온 시점에는 Java 1.5 ~ 1.6 시절이므로 그걸 감수하면서 달라진 내용을 팔로우하면서 봐야한다는 점이다. Java Memory Management라는 책 또한, 볼륨이 상대적으로 적은데 (대략 220쪽분량) 핵심적인 내용들과 내가 궁금한 부분들에 대해서는 전부 다 녹여져 있었다.
 
 이 두 권을 추천하며, 추가적으로 JVM에서 더 넓은 범위의 성능 최적화를 공부하고 싶다면 [실무로 배우는 시스템 성능 최적화, 권문수 저, 2022](https://www.yes24.com/Product/Goods/115426829) 이 책을 추천한다. 
 
@@ -656,7 +662,7 @@ public class Main {
 그렇다면 `members = null` 로 변경하게 되면 어떻게 될까?
 
 <p align="center">
-    <img src="https://i.imgur.com/wWLztN9.png">
+    <img src="https://i.imgur.com/r9OqVsE.png">
 </p>
 <p align="center">
     <em>그림 12. 접근불가능한 객체(Unreacheable Object)가 나타난 상황</a></em>
@@ -868,7 +874,7 @@ GC 대상이 아닌 활성 객체들을 다른 영역에 복제를 한다.
 
 각 영역에 대해서 적절한 알고리즘을 선택할 수 있게 된다고 얘기했는데 여기서 "Youngest Generation Sub Heap"은 기본 정리 알고리즘처럼 단편화가 발생한 모습을 볼 수 있고, "Oldest Generation Sub Heap" 영역은 복제-정리 알고리즘에 본듯이 처리된 모습을 볼 수 있다. 
 
-> 참고) 그림22는 JDK 1.5 시절 그림으로 그냥 위와 같이 영역별로 각기 다른 알고리즘을 적재적소에 쓸 수 있었다 정도로 기억하자.
+> 💡 그림22는 JDK 1.5 시절 그림이므로 "영역별로 각기 다른 알고리즘을 적재적소에 쓸 수 있었다" 정도로 기억하자.
 
 현대의 대부분 가비지 수집기들은 이 알고리즘을 근간에 두고 있고, 밑에서 다룰 기본적인 GC 매커니즘을 설명할 때 나올 힙의 영역들에 대해서도 이 알고리즘의 영향을 받았다.
 
