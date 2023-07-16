@@ -19,7 +19,7 @@ categories: 개발
 - STEP 2. 메모리 영역
     - STEP 2.1 스택 영역
     - STEP 2.2 힙 영역
-    - STEP 2.3 번외) 자바에서 레퍼런스 타입을 사용할 때 주의해야할 점
+    - STEP 2.3 번외) 레퍼런스 타입 사용 주의사항
 - STEP 3. 실행 엔진 
     - STEP 3.1 GC
       - STEP 3.1.1 Garbage Collections roots
@@ -56,16 +56,24 @@ categories: 개발
 
 위 그림은 전반적인 JVM의 구조를 나타내는 그림이다. 클래스로더 시스템에 대해서는 이전에 [한번 다뤘으니](https://brewagebear.github.io/fundamental-jvm-classloader/), 이 포스팅의 중점은 메모리 영역(Runtime Data Areas)와 실행 엔진(Execution Engine) 부분이라고 볼 수 있을 것 같다.
 
-예전에 한번 GC 알고리즘에 대해서 다루고자 한다 했는데 너무 작성한거 아닌가 싶다.
-거기다가 최신 GC인 ZGC는 내용의 압박으로 인하여 일단 패스했는데 만약 추가하게 되면 개요에 추가하도록 하겠다.
+예전에 한번 GC 알고리즘에 대해서 다루고자 한다 했는데 너무 시간이 지났다. 그래서 이왕 시간이 많이 지난거 한번에 모든 걸 담아보면 어떨까? 라는 생각으로 글을 작성하였고, 이 때문에 장문의 글이 되어버렸다. 거기다가 최신 GC인 ZGC는 내용의 압박으로 인하여 일단 패스했는데 만약 추가하게 되면 개요에 추가하도록 하겠다.
 
+추가로 이번 내용의 대부분은 [Java Performance Fundamental, 김한도 저, 2009](https://www.yes24.com/Product/Goods/3577335), [Java Memory Management: A comprehensive guide to garbage collection and JVM tuning, Maaike van Putten, 2022](https://a.co/d/3vI0AU4) 이 두가지 책을 많이 참고하였다.
+
+특히, Java Performance Fundamental은 10년이 지난 지금에도 바이블이라고 생각한다. 이 책을 꼭 읽어보기를 추천한다. 주의할 점은 이 책이 나온 시점에는 Java 1.5 ~ 1.6 시절이므로 그걸 감수하면서 달라진 내용을 팔로우하면서 봐야한다는 점이다. Java Memory Management라는 책 또한, 볼륨이 상대적으로 적은데 (대략 220쪽분량) 핵심적인 내용들과 내가 궁금한 부분들에 대해서는 전부 다 녹여져 있었다.
+
+이 두 권을 추천하며, 추가적으로 JVM에서 더 넓은 범위의 성능 최적화를 공부하고 싶다면 [실무로 배우는 시스템 성능 최적화, 권문수 저, 2022](https://www.yes24.com/Product/Goods/115426829) 이 책을 추천한다. 
+
+자 이제 본론으로 들어가보자.
 
 ## STEP 1. 자바 메모리 관리
 
 이 메모리 영역은 자바가 동작할 때 사용되는 모든 것들이 올라가지게 된다. JVM의 **주된 역할 중 하나도 이 메모리 영역(Runtime Data Areas)를 관리**하는 것이다.
+
 JVM이 이 영역을 관리를 하지 않게 되면, 메모리 라이프 사이클 관리와 같은 활동이 수행되지 않을 것이고 이는 OOM과 같은 문제를 발생시킬 수 있다. 
 
 즉, JVM은 이 메모리 영역에 대한 라이프 사이클을 관리하여 프로그래머가 해당 부분에 노력을 기하지 않더라도 자동으로 관리하는 편의성을 가져왔다.
+
 위에서는 설명한 바와 같이 JVM은 이 메모리 영역에 대한 "라이프 사이클"을 책임져준다. 이는 자바 이전의 프로그래밍 언어들(`C, CPP`)은 프로그래머가 스스로 메모리 관리를 했어야했다는 점이다.
 
 학부생때 `C, CPP` 와 같은 프로그래밍 언어를 다뤘다면 `malloc` 이나 `free` 등을 사용해서 메모리 관리를 한 적이 있을 것이다. 이 언어들은 메모리 영역에 대한 관리를 프로그래머 스스로가 책임을 졌었다.
@@ -85,15 +93,16 @@ JVM이 이 영역을 관리를 하지 않게 되면, 메모리 라이프 사이�
 2. 메모리 영역(Runtime Data Areas) : 클래스의 로딩과 바이트 코드의 실행은 메모리를 필요로 하는데 이러한 작업들을 수행하는 구성요소
 3. 실행 엔진(Execution Engine) : 클래스로더를 통해서 로드된 클래스들이 메모리에 적재되면 실제 바이트 코드를 실행하는 구성요소
 
-아마 대충 러프한 플로우는 이해가 됐을 것이다.
-자세한 부분은 [OpenJDK - Github](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/runtime/init.hpp#L38) 해당 코드를 참고해보자. `init_globals()` 메서드를 통해서 준비 과정을 거치면서 `Main Java Thread` 를 구성하고, `vm_init_globas()` 메서드를 통해서 `VM Thread` 를 구성하는 헤더파일이다. 요즘 깃허브가 좋아져서, 클릭하면서 해당 내용을 참고할 수 있으니 내부 로직을 상세히 보고 싶으면 해당 깃허브를 참고해보자.
+아마 대충 러프한 플로우는 이해가 됐을 것이다. 자세한 부분은 [OpenJDK - Github](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/runtime/init.hpp#L38) 해당 코드를 참고해보자.
 
-추가로 앞으로 기술할 모든 내용은 Hospot VM 기준이다. 
+ `init_globals()` 메서드를 통해서 준비 과정을 거치면서 `Main Java Thread` 를 구성하고, `vm_init_globas()` 메서드를 통해서 `VM Thread` 를 구성하는 헤더파일이다. 요즘 깃허브가 좋아져서, 클릭하면서 해당 내용을 참고할 수 있으니 내부 로직을 상세히 보고 싶으면 해당 깃허브를 참고해보자.
+
+추가로 앞으로 기술할 모든 내용은 **Hospot VM**[^2] 기준이다. 
 
 우리는 대충 JVM이 어떠한 역할을 하는지와 실제 자바 코드가 어떤식으로 처리되고, 구성요소는 어떤 식으로 동작하는 지 배웠다.
 앞서서 말했듯이 이번에 주요하게 볼 내용은 메모리 영역과 실행엔진 부분이므로 이 두 컴포넌트의 상세한 내용을 확인해보자. 
 
-## STEP 2. 메모리 영역(Runtime Data Areas)
+## STEP 2. 메모리 영역
 
 <p align="center">
     <img src="https://i.imgur.com/UtkS6yx.png">
@@ -106,31 +115,36 @@ JVM이 이 영역을 관리를 하지 않게 되면, 메모리 라이프 사이�
 이미 위에서 보여줬던 그림처럼 메모리 영역은 5가지의 구성요소로 이뤄진다고 하였다. 
 간략하게, 각 영역들이 어떠한 일을 하는지를 설명한 후에 세부적인 내용을 다뤄보고자 한다.
 
-1. 스택 영역 
+1. **스택 영역**
 
-프리미티브 타입들과 힙 영역에 저장된 참조(Reference)에 대한 정보들이 담기는 영역이다. 메서드가 호출되면 스택 프레임(Stack Frame)이 생성되며, 각 프레임마다 메서드에 대한 값을 유지하고 있다. 스택 영역은 **각 쓰레드 마다 독립적인 공간이 할당**된다. 
+프리미티브 타입들과 힙 영역에 저장된 참조(Reference)에 대한 정보들이 담기는 영역이다.
 
-2. PC 레지스터
+메서드가 호출되면 스택 프레임(Stack Frame)이 생성되며, 각 프레임마다 메서드에 대한 값을 유지하고 있다. 스택 영역은 **각 쓰레드 마다 독립적인 공간이 할당**된다. 
+
+2. **PC 레지스터**
 
 운영체제에서 말하는 PC 레지스터와 상동한 일을 수행한다. 현재 실행 중인 명령의 주소를 저장함으로써 어떤 코드가 실행되는 지를 알게끔한다.
 PC 레지스터는 **각 쓰레드 마다 독립적인 공간이 할당**된다.
 
-3. 힙 영역
+3. **힙 영역**
 
 JVM이 시작되면, RAM의 일부분을 어플리케이션의 메모리 동적할당을 위해서 예약한다고 위에서 말했었다. 이 영역이 해당 부분이라고 보면된다.
+
 런타임 데이터들은 이 곳에 할당되며, 인스턴스들을 이 영역에서 찾을 수 있다. 
 힙 영역은 GC를 통해서 메모리 할당, 해제등이 관리가 된다.
 
 힙 영역은 **모든 쓰레드가 공유**한다.
 
-4. 메서드 영역(메타스페이스 영역) 
+4. **메서드 영역(메타스페이스 영역)**
 
 클래스의 메타데이터인 런타임 코드, 정적 변수, 상수 풀 그리고 생성자 코드등을 포함한다.
+
 메서드 영역은 **모든 쓰레드가 공유**한다.
 
-5. 네이티브 메서드 스택 영역
+5. **네이티브 메서드 스택 영역**
 
 이 영역은 Java가 아닌 C와 같은 언어로 구현된 네이티브 코드가 실행되는 곳이고, 위에서 살펴본 스택처럼 네이티브 코드 또한, 명령에 대한 스택이 필요하므로 네이티브 코드를 위한 스택 영역이라고 보면 될 것이다.
+
 이 영역 또한, **스택 영역과 같이 모든 쓰레드가 독립적인 공간**을 갖는다.
 
 위 내용을 정리하면 아래와 같을 것이다.
@@ -254,9 +268,11 @@ class test.Main {
 
 + 프레임 데이터(Frame Data)
 
-위에서 프레임 데이턴느 메서드를 실행하는 데 필요한 다양한 데이터로 구성된다고 얘기를 하였다. 런타임 상수 풀(run-time constant pool)에 대한 참조, 일반 메서드 호출 완료(Normal Method Invocation Completion), 갑작스러운 메서드 호출 완료(Abrupt Method Invocation Completion) 등이 이 데이터에 대한 예시이다.
+위에서 프레임 데이턴느 메서드를 실행하는 데 필요한 다양한 데이터로 구성된다고 얘기를 하였다. 
 
-스택 프레임은 동적 링킹(Dynamic-Linking)[^2]을 지원하기 위해 현재 메서드 유형에 대한 런타임 상수 풀의 참조를 갖고 있다. 예시를 위해서 위의 코드를 좀 손을 봐보자.
+런타임 상수 풀(run-time constant pool)에 대한 레퍼런스, 일반 메서드 호출 완료(Normal Method Invocation Completion), 갑작스러운 메서드 호출 완료(Abrupt Method Invocation Completion) 등이 이 데이터에 대한 예시이다.
+
+스택 프레임은 동적 링킹(Dynamic-Linking)[^3]을 지원하기 위해 현재 메서드 유형에 대한 런타임 상수 풀의 참조를 갖고 있다. 예시를 위해서 위의 코드를 좀 손을 봐보자.
 
 ```java
 // main.java
@@ -351,6 +367,7 @@ public Main {
 `test()` 메서드가 호출되면 프레임이 생길테고, 이때 우리는 해당 메서드 내부에서 `new Person("bear", "Goyang-si")` 와 같이 생성자를 전달하여 객체를 생성하였다. 
 
 인스턴스가 생성되게 되면, 실제 값은 힙 영역에 저장되고 스택 내 지역변수는 해당 힙 영역에 생성된 값에 대한 레퍼런스를 갖고 있게 된다.
+
 즉, `person` 이라는 **변수 자체는 실제 값을 들고 있는 것이 아니라 힙 영역에 할당된 데이터에 대한 참조 값을 들고 있는 것**이다.
 
 위의 예시를 좀 더 우리가 자주 쓰는 자바 언어처럼 바꾸면서 스택 프레임과 힙 영역 할당 과정에 대해서 알아보자.
@@ -408,7 +425,7 @@ public Main {
 
 이 과정을 끝낸 후에 위에서 우리가 바이트 코드를 분석했던 방식과 같이 프로그램이 동작할 것이다.
 
-### STEP 2.3 번외) 자바에서 레퍼런스 타입을 사용할 때 주의해야할 점
+### STEP 2.3 번외) 레퍼런스 타입 사용 주의사항
 
 우리는 스택 영역을 깊게 보면서, 스택과 힙 영역이 어떤 역할을 하는 지와 자바에서 객체들이 생성될 때 어떠한 과정으로 생성되는 지 등을 살펴보았다.
 또한, 힙 영역에 우리가 사용할 객체가 생성되면 이 값은 레퍼런스를 토대로 참조를 하여 접근하는 식으로 동작하는 것을 알게되었다. 
@@ -509,12 +526,12 @@ public class Main {
 ```
 
 
-이 방식을 유식한 말로 방어적 복사 기법(Defensive copy)[^3] 이라 한다. 위에서 `get()` 을 호출하거나 생성자를 호출 할 때 `new StringBuilder` 를 통해서 아예 새로운 객체를 할당하여 리턴하는 것을 볼 수 있다. 이를 통해서 레퍼런스를 끊고, 올바르게 캡슐화를 시킬 수 있다. 
+이 방식을 유식한 말로 방어적 복사 기법(Defensive copy)[^4] 이라 한다. 위에서 `get()` 을 호출하거나 생성자를 호출 할 때 `new StringBuilder` 를 통해서 아예 새로운 객체를 할당하여 리턴하는 것을 볼 수 있다. 이를 통해서 레퍼런스를 끊고, 올바르게 캡슐화를 시킬 수 있다. 
 
 이러한 문제는 레퍼런스 타입에 발생한다고 얘기를 했는데 우리가 자주 사용하는 콜렉션 프레임워크인 `List, Map, Set` 등에도 발생할 수 있다.
 
-따라서, 일급콜렉션[^4] 을 사용할 때도 위와 같은 방어적 복사 기법과 같이 불변 객체(`unmodifiableList` 와 같은)를 활용하기도 한다. 
-이 내용에 대해서 좀 더 알고 싶으면, 깊은 복사(Deep Copy)[^5] 혹은 얕은 복사(Shallow Copy)[^5] 에 대해서 공부해보도록 하자.
+따라서, 일급콜렉션[^5] 을 사용할 때도 위와 같은 방어적 복사 기법과 같이 불변 객체(`unmodifiableList` 와 같은)를 활용하기도 한다. 
+이 내용에 대해서 좀 더 알고 싶으면, 깊은 복사(Deep Copy)[^6] 혹은 얕은 복사(Shallow Copy)[^6] 에 대해서 공부해보도록 하자.
 
 ## STEP 3. 실행 엔진 
 
@@ -528,20 +545,22 @@ public class Main {
 위에서는 스택 & 힙 영역에 대해서 다뤘었다. 이제는 실행 엔진에 대해서 다뤄보고자 한다.
 특히, 중점적으로 GC에 대해서 다룰 예정이다.
 
-### STEP 3.1 GC(Garbage Collector)
+### STEP 3.1 GC
 
 서두에서 자바는 `C, CPP`와 다르게 JVM 내에서 메모리를 할당하고 해제하는 등의 라이프 사이클을 관리해준다고 얘기하였다.
 이 기능을 제공해주는 것이 바로 "GC" 이다. 
 
 이제 GC가 어떤 매커니즘으로 동작하는지 알아볼 차례이다. 
 
-#### STEP 3.1.1 Garbage Collections roots (GC Root Set)
+#### STEP 3.1.1 GC Root Set
 
 GC의 로직은 매우 간단하다. 
 
 > "현재 힙과 메서드 영역에서 사용되지 않는 객체(Object)를 정리하는 것이다."
 
-그렇다면, 이 사용유무는 어떻게 판별할까? 그것을 판단해주는 것이 바로 "GC Root Set"이다.  Root Set에서 어떤 식으로든 레퍼런스를 참고하고 있으면 ***접근가능한 객체(Reachable Object)***라 부르고 이를 현재 사용 객체라 판단한다. 
+그렇다면, 이 사용유무는 어떻게 판별할까? 그것을 판단해주는 것이 바로 *"GC Root Set"* 이다.  
+
+Root Set에서 어떤 식으로든 레퍼런스를 참고하고 있으면 ***접근가능한 객체(Reachable Object)*** 라 부르고 이를 현재 사용 객체라 판단한다. 
 
 GC Root Set의 종류는 아래와 같다.
 1. 스택 내 레퍼런스 정보 
@@ -550,26 +569,35 @@ GC Root Set의 종류는 아래와 같다.
 
 위 세가지가 왜 GC 대상이 되면 안되는 지는 하나씩 설명해보도록 하겠다.
 
-+ 스택 내 레퍼런스 정보 
++ **스택 내 레퍼런스 정보**
 
-스택 내 레퍼런스 정보는 엄밀하게 따지면, 현재 동작 중인 상황에서의 레퍼런스에 대해서라고 볼 수 있다. 즉, 지역변수 배열이나 피연산자 스택 등에 레퍼런스 정보가 현재 존재한다면 이는 접근가능한 객체이므로, GC의 대상이 아니다. 상식적으로 생각해보면 매우 쉬운데 정상적으로 어플리케이션이 동작 중인데 해당 레퍼런스가 GC의 대상이 된다면 아마도 수 많은 오류들을 마주하게 될 것이다. 
+스택 내 레퍼런스 정보는 엄밀하게 따지면, 현재 동작 중인 상황에서의 레퍼런스에 대해서라고 볼 수 있다. 
 
-+ JNI 레퍼런스 정보 
+즉, 지역변수 배열이나 피연산자 스택 등에 레퍼런스 정보가 현재 존재한다면 이는 접근가능한 객체이므로, GC의 대상이 아니다. 
 
-위에서 JNI에 대해서는 간략히 다뤘는데, 네이티브 호출을 한 후에 실제로 사용 중인지 확인을 해야될 것이다.  스택 내 레퍼런스 정보와 마찬가지로 해당 객체를 네이티브 코드에서 사용 중인데 함부로 GC를 하게 된다면 많은 오류가 발생할 것이기 때문이다. 따라서, JNI에 대한 레퍼런스 정보를 GC Root Set으로 사용하는 것이다. 
+상식적으로 생각해보면 매우 쉬운데 정상적으로 어플리케이션이 동작 중인데 해당 레퍼런스가 GC의 대상이 된다면 아마도 수 많은 오류들을 마주하게 될 것이다. 
 
-+ 메서드 영역 내 로드된 클래스 중 클래스 정적 변수 및 상수 풀 레퍼런스 정보
++ **JNI 레퍼런스 정보**
+
+위에서 JNI에 대해서는 간략히 다뤘는데, 네이티브 호출을 한 후에 실제로 사용 중인지 확인을 해야될 것이다.  
+
+스택 내 레퍼런스 정보와 마찬가지로 해당 객체를 네이티브 코드에서 사용 중인데 함부로 GC를 하게 된다면 많은 오류가 발생할 것이기 때문이다. 
+
+따라서, JNI에 대한 레퍼런스 정보를 GC Root Set으로 사용하는 것이다. 
+
++ **메서드 영역 내 로드된 클래스 중 클래스 정적 변수 및 상수 풀 레퍼런스 정보**
 
 메서드 영역에 대해서도 서두에서 간략하게 말했었다. 두 데이터 모두 클래스 수준의 데이터이며, 둘 다 클래스가 로드될 때 생성된 후에 클래스가 JVM 내에 로드된 상태로 유지되는 한 존재한다.
+
 따라서, 두 데이터를 갖고 있는 클래스가 로드 되는 동안에는 GC의 대상이 되서는 안된다.
 
 이는 후에 메서드 영역에 대한 GC를 다루면서 좀 더 다뤄보고자 한다.
 
-> 위와 같은 세가지 레퍼런스 정보에 직,간접적으로 참조되고 있다면 모두 접근가능한 객체(Reacheable Object)이고, GC 대상이 아니라는 점을 명심하자.
+> 위와 같은 세가지 레퍼런스 정보에 **직, 간접적**으로 참조되고 있다면 모두 접근가능한 객체이고, GC 대상이 아니라는 점을 명심하자.
 
 이제, 실제 GC가 어떤 식으로 동작하는 지 알아보자.
 
-### STEP 3.2 식별 알고리즘(Marking Algorithm)
+### STEP 3.2 식별 알고리즘
 
 아래의 코드가 주어진다 가정하고 스택 프레임을 그려보겠다.
 
@@ -681,19 +709,22 @@ GC를 통한 마킹은 모든 활성 객체와 가비지 수집 준비가 되지
 우리는 JVM에서 GC가 이뤄질 때 접근가능한 객체인지 아닌지를 판별하는 알고리즘을 살펴보았다.
 이 마킹 방법에는 크게 2가지 방법이 존재한다.
 
-#### STEP 3.2.1 스탑-더-월드(Stop-The-World, STW)
+#### STEP 3.2.1 스탑-더-월드
 
-위에 식별 매커니즘을 보았을 때 궁금한 점이 있지 않은가? 바로 시점의 충돌이다. 
+위에 식별 매커니즘을 보았을 때 궁금한 점이 있지 않은가? 바로 **시점의 충돌**이다. 
 
-> 마킹하는 순간에 새로운 객체가 생겨나면? 이 객체는 아직 특수비트가 0일 테고 나중에 GC대상이 될 수 있지 않을까요?
+> 마킹하는 순간에 새로운 객체가 생겨나면? 
+>
+> 이 객체는 아직 특수비트가 0일 테고 나중에 GC대상이 될 수 있지 않을까요?
 
 라는 질문이 나올 수 있다. 이러한 시점의 차이로 인해서 살아있어야할 객체가 GC에 의해 수집된다면 아마도 재앙이라고도 볼 수 있을 것이다.
+
 스탑-더-월드 알고리즘은 이름처럼 마킹 단계에서 **새 객체가 생성되지 않도록 실행을 일시 중지하는 기법** 이라고 볼 수 있다.
 
 이 방법은 당연히 어플리케이션 **성능에 매우 치명적인 영향** 을 끼친다. 그래서, 많은 자바 개발자들은 스탑-더-월드가 없이 마킹 단계를 수행하고 싶어하였다. 
 이러한 요구사항으로 나온 기법이 바로 **레퍼런스 카운팅(Reference Counting)** 이다.
 
-#### STEP 3.2.2 레퍼런스 카운팅(Reference Counting)
+#### STEP 3.2.2 레퍼런스 카운팅
 
 이 알고리즘은 객체 헤더의 필드를 주어서 레퍼런스 카운트를 저장한 후 이 객체가 다른 객체에 의해 참조되는 경우 해당 객체의 레퍼런스 카운트는 1씩 증가하고, 해제될 경우에는 1씩 감소하는 단순한 매커니즘을 갖고 있다. 
 
@@ -705,7 +736,7 @@ GC를 통한 마킹은 모든 활성 객체와 가비지 수집 준비가 되지
 왜 그럴까? 이 알고리즘은 2가지 단점을 갖고 있다.
 
 1. 카운트 유지 오버헤드 : 각 객체는 레퍼런스 카운트를 유지해야되며, 레퍼런스가 삭제/생성될 때마다 업데이트해야된다. 이는 객체가 많아질 경우 상당한 오버헤드가 발생한다.
-2. 고립된 섬 문제(Island of Isolation)[^6] : 순환참조 관계에서 발생하는 문제인데, 순환참조 관계에서는 카운트가 0으로 떨어지지않고 GC가 안되는 문제가 발생하여 메모리 릭이 발생할 수 있다.
+2. 고립된 섬 문제(Island of Isolation)[^7] : 순환참조 관계에서 발생하는 문제인데, 순환참조 관계에서는 카운트가 0으로 떨어지지않고 GC가 안되는 문제가 발생하여 메모리 릭이 발생할 수 있다.
 
 <p align="center">
     <img src="https://i.imgur.com/ofah5OD.png">
@@ -718,14 +749,14 @@ GC를 통한 마킹은 모든 활성 객체와 가비지 수집 준비가 되지
 즉, 위와 같은 단점들을 갖고 있기 때문에 오늘날에도 우리는 식별 알고리즘에 스탑-더-월드를 사용하고 있는 것이다. 
 이제 식별을 했으니 실제 메모리를 지우는 작업을 보고자한다. 이를 정리 알고리즘(Sweep Algorithm)이라 부를 것이다.
 
-### STEP 3.3 정리 알고리즘(Sweep Algorithm)
+### STEP 3.3 정리 알고리즘
 
 정리 알고리즘은 그냥 비워버리는 알고리즘부터 정리하면서 압축하는 알고리즘, 다른 곳으로 복제하는 알고리즘이 존재한다.
 기본적인 알고리즘부터 확인해보자. 
 
-#### STEP 3.3.1 기본 정리 알고리즘(Normal Sweeping, Mark-and-Sweep Algorithm)
+#### STEP 3.3.1 기본 정리 알고리즘
 
-기본 정리 알고리즘은 아주 단순하다.  아래의 그림을 보면 바로 이해될 것이다.
+기본 정리 알고리즘(Normal Sweeping, Mark-and-Sweep Algorithm)은 아주 단순하다.  아래의 그림을 보면 바로 이해될 것이다.
 
 <p align="center">
     <img src="https://i.imgur.com/LRqNaYu.png">
@@ -738,7 +769,7 @@ GC를 통한 마킹은 모든 활성 객체와 가비지 수집 준비가 되지
 마킹 단계에서 접근가능하지 않은 객체로 판별된 녀석들을 위 그림과 같이 할당 해제하는 것이다. 
 여기서, 점선은 메모리의 가용 영역이라고 생각하자.
 
-그런데, 위와 같이 처리하면 어떠한 문제가 생길까? 애초에 그림 상으로 봐도 메모리 단편화(Memory Fragmentation)[^7] 이 발생했음을 확인할 수 있다.
+그런데, 위와 같이 처리하면 어떠한 문제가 생길까? 애초에 그림 상으로 봐도 메모리 단편화(Memory Fragmentation)[^8] 이 발생했음을 확인할 수 있다.
 만약, 가용용량보다 큰 객체를 할당하고자 하면 어떠한 문제가 발생할까?
 
 <p align="center">
@@ -752,12 +783,12 @@ GC를 통한 마킹은 모든 활성 객체와 가비지 수집 준비가 되지
 위와 같은 객체가 들어오고자하면 두 가용공간 모두 할당을 실패하므로, `OutOfMemory` 가 발생할 것이다.
 이러한, 단편화를 막기 위해서 먼저, 접근가능하지 않은 객체를 지운 후 압축을 하는 압축-정리 알고리즘이 탄생하였다.
 
-#### STEP 3.3.2 압축-정리 알고리즘(Sweeping with compacting, Mark-and-Compaction Algorithm)
+#### STEP 3.3.2 압축-정리 알고리즘
 
-압축-정리 알고리즘은 위에서 말한 것과 같이 기본 알고리즘 이후에 압축 단계가 추가된 알고리즘이다.
+압축-정리 알고리즘(Sweeping with compacting, Mark-and-Compaction Algorithm)은 위에서 말한 것과 같이 기본 알고리즘 이후에 압축 단계가 추가된 알고리즘이다.
 
 <p align="center">
-    <img src="https://i.imgur.com/PIgTDYP.png">
+    <img src="https://i.imgur.com/iuBg8oq.png">
 </p>
 <p align="center">
   <em>그림 19. 압축-정리 알고리즘</em>
@@ -768,9 +799,9 @@ GC를 통한 마킹은 모든 활성 객체와 가비지 수집 준비가 되지
 
 이러한 문제때문에 복제-정리 알고리즘이 대두되었다.
 
-#### STEP 3.3.3 복제-정리 알고리즘(Sweeping with compacting, Copying Algorithm)
+#### STEP 3.3.3 복제-정리 알고리즘
 
-이 알고리즘은 아예 메모리 영역을 2개의 공간으로 나누어서 정리한다는 개념에서 출범하였다.
+복제-정리 알고리즘(Sweeping with copying, Copying Algorithm)은 **아예 메모리 영역을 2개의 공간**으로 나누어서 정리한다는 개념에서 출범하였다.
 
 그 이유는 ***압축 비용보다 영역 자체를 2개를 나눈 뒤 연속적으로 복제하는 것***이 비용이 저렴하기 때문이다.
 
@@ -809,15 +840,17 @@ GC 대상이 아닌 활성 객체들을 다른 영역에 복제를 한다.
 	2. 압축-정리 알고리즘
 	3. 복제-정리 알고리즘
 
-마킹 단계에서는 레퍼런스 카운팅의 단점(독립된 섬 문제)가 존재하여 요즘날의 GC들은 스탑-더-월드 방식을 사용한다고 말했었다. 마킹 후에 새 객체를 위해 공간을 비우는 알고리즘들을 정리 알고리즘이라 말하며, 이에 대한 여러가지 알고리즘을 살펴보았다.
+마킹 단계에서는 레퍼런스 카운팅의 단점(독립된 섬 문제)[^7]가 존재하여 요즘날의 GC들은 스탑-더-월드 방식을 사용한다고 말했었다. 마킹 후에 새 객체를 위해 공간을 비우는 알고리즘들을 정리 알고리즘이라 말하며, 이에 대한 여러가지 알고리즘을 살펴보았다.
 
 이제 힙 & 스택 영역에서 어떤식으로 GC가 일어나는지를 확인하기에 앞 서 한가지 중요한 알고리즘을 보고 가자.
 
 ### STEP 3.5 Generational Algorithm 
 
-복제-정리 알고리즘을 사용하면서 몇 가지 경험적 지식이 체득되었는데 바로 대부분의 프로그램에서 생성되는 객체는 생성된 지 얼마 되지 않아 GC 대상이 되는 짧은 수명을 갖게 된다는 점과 또한 어떤 프로그램도 수명이 긴 몇 개의 객체들은 반드시 가지고 있다는 점이다. 
+복제-정리 알고리즘을 사용하면서 몇 가지 경험적 지식이 체득되었는데 바로 **대부분의 프로그램에서 생성되는 객체는 생성된 지 얼마 되지 않아 GC 대상이 되는 짧은 수명을 갖게 된다는 점**과 또한 **어떤 프로그램도 수명이 긴 몇 개의 객체들은 반드시 가지고 있다는 점**이다. 
 
-이를 약한 세대 가설(weak generational hypothesis)[^8]라 한다. 이 가설이 왜 복제-정리 알고리즘에서 경험적 지식으로 파생되었냐면, 수명이 긴 객체의 경우 위에 복제-정리 알고리즘에서 본 것처럼 계속 살아있을 뿐이지만 복제를 하게 되면서 왔다갔다를 계속하게 될 것이다.
+이를 **약한 세대 가설(weak generational hypothesis)**[^9]라 한다. 
+
+이 가설이 왜 복제-정리 알고리즘에서 경험적 지식으로 파생되었냐면, 수명이 긴 객체의 경우 위에 복제-정리 알고리즘 매커니즘에 의해서 두 영역을 서로 오고갈텐데 정리 대상은 아니게 되는 것이다.
 
 그러다보니 ***오버헤드가 만만치 않게 된다***는 사실을 알게 된 것이다. 이 사실은 Generational Algorithm이 만들어지는 데 기여를 하였다.
 이 알고리즘을 토대로 메모리 단편화, 활용 그리고 복제-정리 알고리즘이 가진 오버헤드를 상당 부분 극복할 수 있었고 각 영역에 대해서 적절한 알고리즘을 선택할 수 있게 되었다.
@@ -828,10 +861,14 @@ GC 대상이 아닌 활성 객체들을 다른 영역에 복제를 한다.
     <img src="https://i.imgur.com/Cx9dI52.png">
 </p>
 <p align="center">
-  <em><a href="https://www.yes24.com/Product/Goods/3577335">그림 22. Generational Algorithm, Java Performance Fundamenta, 김한도 저</a></em>
+  <em><a href="https://www.yes24.com/Product/Goods/3577335">그림 22. Generational Algorithm, Java Performance Fundamental, 김한도 저</a></em>
 </p>
 
-①은 GC 이전이고, ②는 GC 이후를 보여준다. 각 영역에 대해서 적절한 알고리즘을 선택할 수 있게 된다고 얘기했는데, 여기서 "Youngest Generation Sub Heap"은 기본 정리 알고리즘처럼 단편화가 발생한 모습을 볼 수 있고, "Oldest Generation Sub Heap" 영역은 복제-정리 알고리즘에 본듯이 처리된 모습을 볼 수 있다. (참고로 위의 그림은 JDK 1.5 시절 그림으로 그냥 위와 같이 영역별 알고리즘을 따로 둘 수 있었다 정도로 기억하자.)
+①은 GC 이전이고, ②는 GC 이후를 보여준다. 
+
+각 영역에 대해서 적절한 알고리즘을 선택할 수 있게 된다고 얘기했는데 여기서 "Youngest Generation Sub Heap"은 기본 정리 알고리즘처럼 단편화가 발생한 모습을 볼 수 있고, "Oldest Generation Sub Heap" 영역은 복제-정리 알고리즘에 본듯이 처리된 모습을 볼 수 있다. 
+
+> 참고) 그림22는 JDK 1.5 시절 그림으로 그냥 위와 같이 영역별로 각기 다른 알고리즘을 적재적소에 쓸 수 있었다 정도로 기억하자.
 
 현대의 대부분 가비지 수집기들은 이 알고리즘을 근간에 두고 있고, 밑에서 다룰 기본적인 GC 매커니즘을 설명할 때 나올 힙의 영역들에 대해서도 이 알고리즘의 영향을 받았다.
 
@@ -954,16 +991,24 @@ GC 대상이 아닌 활성 객체들을 다른 영역에 복제를 한다.
 이 중 네이티브 메모리 영역으로 옮겨진 부분이 바로, 메타스페이스 영역이다.
 
 즉,  `Metaspace` 영역은 네이티브 메모리에 동작을 함으로써 부족할 경우에 자동으로 늘어나는 식으로 하여 기존의 `PermGen` 에 비해 클래스 로드되는 건 수가 많더라하더라도 비교적 안전해졌다.
+
 물론, `-XX:MaxMetaspaceSize` 인자를 통해서 상한을 지정할 수도 있긴하다.
 
 이뿐만 아니라, 압축 클래스 영역(Compress Class Space) 라는 영역도 추가되었다.
-우리가 이 글에서 자주 보았던 레퍼런스는 JVM이 OOPS(Ordinary Object Pointers)라는 자료구조를 활용하여 관리한다. 
 
-32bit 시스템에서는 oops는 최대 힙을 4GB(2^32)까지 사용할 수 있고, 64bit 시스템에서는 oops는 최대 힙을 18.5EB(2^64)까지 사용할 수 있다.
-이것은 이론적인 숫자에 불과하고, 실제로 64bit 포인터로 공간을 관리하는 것은 매우 비효율적이다. (힙을 많이 잡고 있는 만큼 스탑-더-월드가 길어진다.)
+우리가 이 글에서 자주 보았던 레퍼런스는 JVM이 OOPS(Ordinary Object Pointers)[^10]라는 자료구조를 활용하여 관리한다. 
+
+32bit 시스템에서는 oops는 최대 힙을 4GB$(2^{32})$까지 사용할 수 있고, 64bit 시스템에서는 oops는 최대 힙을 18.5EB$(2^{64})$까지 사용할 수 있다.
+
+이것은 이론적인 숫자에 불과하고, 실제로 64bit 포인터로 공간을 관리하는 것은 매우 비효율적이다.
 
 이에, Compressed OOPS라는 녀석이 나왔는데 이는 64bit 환경에서도 OOPS는 32bit 포인터를 활용하게끔 하는 것이다. 이 때문에 많은 자바 어플리케이션들이 32GB 이상 힙 사이즈를 넘지 않는 것을 권고하는 이유기도 하다.
+
 이유는 32GB가 넘어갈 경우에는 Compressed OOPS 기능이 꺼지고, 원래대로 포인터 자체가 64bit를 활용하게 된다.
+
+이러한 이유때문에 ES와 같은 곳에서 32GB 이하의 힙사이즈를 추천 설정으로 이야기하는 것이다. 이 부분에 대해서 궁금하다면 아래의 링크를 참고해보자.
+
+참고 : [ES&Lucene 32GB heap myth or fact? - Elsatic Discuss](https://discuss.elastic.co/t/es-lucene-32gb-heap-myth-or-fact/22920)
 
 이에 대한 자세한 동작 방식이나 매커니즘은 [compressedOops.hpp - OpenJDK github](https://github.com/openjdk/jdk/blob/jdk-18-ga/src/hotspot/share/oops/compressedOops.hpp) 를 참고해보도록 하자.
 
@@ -1016,7 +1061,7 @@ A 객체가 가비지 수집에 의해서 제거됐지만, 메타스페이스는
 이것이 힙 영역에서의 GC와 메서드 영역에서의 GC의 동작 방식 중에 가장 차이가 나는 부분이다.
 이제 마지막으로 가비지 수집기에 대해서 다루고 포스팅을 마무리 짓도록 하겠다.
 
-## STEP 5. 가비지 수집기(GC, Garbage Collector)
+## STEP 5. 가비지 수집기
 
 ### STEP 5.1 Serial GC
 
@@ -1048,14 +1093,15 @@ GC 쓰레드가 수행되면 다음과 같은 순서에 의해서 동작된다.
 
 병렬로 여러 쓰레드를 사용하여 동시에 힙 영역을 정리하며,  스탑-더-월드가 발생하지만 Serial GC와 비교해서 시간이 보다 짧으므로 더 나은 성능을 갖는다.
 
-주의할 점은 병렬 쓰레드로 처리되다보니 두 개의 쓰레드나 프로세스가 동일 메모리 공간을 점유하는 레이스 컨디션 문제가 발생할 수 있다. 이 때문에 동기화 작업이 수반되어야하는데 이 경우 서바이버 영역에서 살아남은 객체들을 승격하는 성능이 떨어지게 된다. 이 때문에, HotSpot VM에서는 PLAB(Parallel Local Allocation Buffer)[^9]라는 승격용 버퍼를 만들었다. 해당 부분은 각주를 보고 참고하자.
+주의할 점은 병렬 쓰레드로 처리되다보니 두 개의 쓰레드나 프로세스가 동일 메모리 공간을 점유하는 레이스 컨디션 문제가 발생할 수 있다. 이 때문에 동기화 작업이 수반되어야하는데 이 경우 서바이버 영역에서 살아남은 객체들을 승격하는 성능이 떨어지게 된다. 이 때문에, HotSpot VM에서는 PLAB(Parallel Local Allocation Buffer)[^11]라는 승격용 버퍼를 만들었다. 해당 부분은 각주를 보고 참고하자.
 
 이 GC를 활성화하기 위해서는 `-XX: +UseParallelGC` 인자를 전달하자.
 
-### STEP 5.3 CMS(Concurrent Mark & Sweep) GC
+### STEP 5.3 CMS GC
 
 ![](https://i.imgur.com/EYVaigT.png)
 
+CMS(Concurrent Mark & Sweep) GC는 아래의 특징을 갖고 있다.
 
 + Young Generation Space(Minor GC) : 우리가 앞서서 봤던 알고리즘대로 동작한다. (수도코드 참고 (복제-정리 알고리즘과 흡사))
 + Old Generation Space(Full GC) : 동시성 기본 정리 알고리즘(Concurrent Mark & Sweep)
@@ -1153,13 +1199,16 @@ Minor GC가 끝나면 바로 Full GC가 발생한다. 그렇다고 해서 이전
 13. [JVM 메모리 구조와 GC - 기계인간 John Grib](https://johngrib.github.io/wiki/jvm-memory/)
 14. [일반적인 GC 내용과 G1GC (Garbage-First Garbage Collector) 내용 - ThinkGround](https://thinkground.studio/2020/11/07/%EC%9D%BC%EB%B0%98%EC%A0%81%EC%9D%B8-gc-%EB%82%B4%EC%9A%A9%EA%B3%BC-g1gc-garbage-first-garbage-collector-%EB%82%B4%EC%9A%A9/)
 15. [1. G1GC - keep going](https://velog.io/@hanblueblue/GC-1.-G1GC)
+16. [Why 35GB Heap is Less Than 32GB – Java JVM Memory Oddities - codecentric](https://www.codecentric.de/wissens-hub/blog/35gb-heap-less-32gb-java-jvm-memory-oddities)
 
 [^1]: [댕글링 포인터(Dangling Pointer) -THINK-PRO BLOG](https://thinkpro.tistory.com/67)
-[^2]: [Java Virtual Machine Specification - Oracle Docs](https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html#jvms-2.6.3)
-[^3]: [방어적 복사(defensive copy) - 기계인간 John Grib](https://johngrib.github.io/wiki/defensive-copy/) 
-[^4]: [일급 콜렉션(First Class Collection)의 소개와 써야할 이유 - 기억보단 기록을](https://jojoldu.tistory.com/412)
-[^5]: [Object Copying - wikipedia](https://en.wikipedia.org/wiki/Object_copying)
-[^6]: [The curious case of Island of Isolation - Arun Jijo](https://medium.com/javarevisited/curious-case-of-island-of-isolation-6243f3a6698d)
-[^7]: [메모리 단편화(Memory Fragmentation)가 무엇이고 왜 발생하는가? - 기본기를 쌓는 정아마추어 코딩블로그](https://jeong-pro.tistory.com/91)
-[^8]: [Generations - Oracle JDK8 Docs](https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/generations.html)
-[^9]: [THread-Local Allocation Buffers in JVM - Kemikit](https://alidg.me/blog/2019/6/21/tlab-jvm) 
+[^2]: [HotSpot(virtual machine) - wikipedia](https://en.wikipedia.org/wiki/HotSpot_(virtual_machine))
+[^3]: [Java Virtual Machine Specification - Oracle Docs](https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html#jvms-2.6.3)
+[^4]: [방어적 복사(defensive copy) - 기계인간 John Grib](https://johngrib.github.io/wiki/defensive-copy/) 
+[^5]: [일급 콜렉션(First Class Collection)의 소개와 써야할 이유 - 기억보단 기록을](https://jojoldu.tistory.com/412)
+[^6]: [Object Copying - wikipedia](https://en.wikipedia.org/wiki/Object_copying)
+[^7]: [The curious case of Island of Isolation - Arun Jijo](https://medium.com/javarevisited/curious-case-of-island-of-isolation-6243f3a6698d)
+[^8]: [메모리 단편화(Memory Fragmentation)가 무엇이고 왜 발생하는가? - 기본기를 쌓는 정아마추어 코딩블로그](https://jeong-pro.tistory.com/91)
+[^9]: [Generations - Oracle JDK8 Docs](https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/generations.html)
+[^10]: [CompressedOops - OpenJDK Wiki](https://wiki.openjdk.org/display/HotSpot/CompressedOops)
+[^11]: [Thread-Local Allocation Buffers in JVM - Kemikit](https://alidg.me/blog/2019/6/21/tlab-jvm) 
