@@ -614,7 +614,7 @@ CPU Bound 어플리케이션으로 인해 부하가 발생하면 신규 인스�
 이는 별도로 처리를 해줘야한다.
 
 이에 대해서 아주 자세히 설명한 강의가 있어서 이를 링크로 남겨본다.
-https://class101.net/classic/products/T6HT0bUDKIH1V5i3Ji2M
++ [현직 대기업 개발자 푸와 함께하는 진짜 백엔드 시스템 실무!](https://class101.net/classic/products/T6HT0bUDKIH1V5i3Ji2M)
 
 그렇다면, Load Average가 부하의 성격은 보여주지 않는데 CPU Bound인지 I/O Bound인지 파악할 수 있는 방법이 있을까?
 바로 `vmstat` 을 통해서 해결할 수 있다.
@@ -673,4 +673,4 @@ CPU Bound 어플리케이션을 수행 후에 확인해보자.
 3. [The Liunx Scheduling Algorithm - Team LiB](http://books.gigatux.nl/mirror/kerneldevelopment/0672327201/ch04lev1sec2.html)
 4. [wait Queue - 달려라](https://blog.naver.com/sysapi/20011482139)
 5. [Memory Mapping - Seoul National University](http://csl.snu.ac.kr/courses/4190.307/2020-1/9-mmap.pdf)
-
+6. [현직 대기업 개발자 푸와 함께하는 진짜 백엔드 시스템 실무!](https://class101.net/classic/products/T6HT0bUDKIH1V5i3Ji2M)
