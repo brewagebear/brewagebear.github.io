@@ -21,27 +21,40 @@ categories: 개발 인프라 독서요약
 
 ### 1.1 병렬성과 동시성 
 
-![](https://i.imgur.com/KW1ffSd.png)
+<p align="center">
+    <img src="https://i.imgur.com/KW1ffSd.png">
+</p>
+<p align="center">
+    <em>그림 1. 병렬성과 동시성</a></em>
+</p>
+
 
 1. 병렬성(Parallelism)
 	+ 물리적 쓰레드에 연관이 있으며, 코어 당 만약 1개의 쓰레드를 가지게 되면 4개의 물리적 쓰레드를 갖게 된다.
 	+ 이 물리적 쓰레드는 실제로 분리된 코어 상에서 동작하므로 동시에 수행될 수 있다. 
 
-
-![](https://i.imgur.com/vyDaj7R.png)
+<p align="center">
+    <img src="https://i.imgur.com/vyDaj7R.png">
+</p>
+<p align="center">
+    <em>그림 2. 병렬성(Parallelism)</a></em>
+</p>
 
 위와 같이 태스크들이 4개로 병렬 수행을 한다해도 문제 없이 동작을 할 수 있다. 이것이 병렬성이다. 
 
 2. 동시성(Concurrency) 
-	+ 프로세스 혹은 프로그램 상에서 생성한 논리적 쓰레드에 연관이 있다
+	+ 프로세스 혹은 프로그램 상에서 생성한 논리적 쓰레드에 연관이 있다.
 	+ 실제로 동시 수행은 일어나지 않으나 시분할적으로 매우 빠르게 문맥교환이 일어나서 하나의 흐름처럼 동시에 보이는 것이다.
 
-![](https://i.imgur.com/YuGifc5.png)
+<p align="center">
+    <img src="https://i.imgur.com/YuGifc5.png">
+</p>
+<p align="center">
+    <em>그림 3. 동시성(Concurrency)</a></em>
+</p>
 
 
 위의 그림에서 Process에 2개의 논리적 쓰레드가 있었는데 해당 쓰레드 2개가 어떠한 작업($T1, T2$)를 처리하는 상황을 그려본 것이다. 
-
-참고 : https://freecontent.manning.com/concurrency-vs-parallelism/
 
 그렇다면, 이 병렬성과 동시성의 개념이 왜 중요할까? 
 
@@ -57,7 +70,7 @@ categories: 개발 인프라 독서요약
 #define __TASK_STOPPED			0x00000004
 #define __TASK_TRACED			0x00000008
 ```
-+ 출처 : https://github.com/torvalds/linux/blob/master/include/linux/sched.h#L86
++ 참고 : [linux/sched.h](https://github.com/torvalds/linux/blob/master/include/linux/sched.h#L86)
 
 위는 리눅스에서 작업(Task)의 상태를 나타내는 식별자이다. 
 
@@ -76,7 +89,13 @@ categories: 개발 인프라 독서요약
 
 #### 1.2.1 Run Queue
 
-![](https://i.imgur.com/qW8dVbK.png)
+<p align="center">
+    <img src="https://i.imgur.com/qW8dVbK.png">
+</p>
+<p align="center">
+    <em><a href="https://cs4118.github.io/www/2023-1/lect/10-run-wait-queues.html">그림 4. Run Queue, COMS W4118 Operating Systems 1 - Columbia univ, 2023</a></em>
+</p>
+
 
 위와 같은 `task_struct`의  `list_head` 포인터를 통해서 자식/형제 계층들이 연결이 된다. 
 `run queue`는 상태가 `TASK_RUNNING`인 `list_head` 들과 연결이 된다. 따라서, `run queue` 용으로 `task_struct`에는 별도로 `list_head`가 있어야한다.
@@ -91,15 +110,17 @@ categories: 개발 인프라 독서요약
 
 이것이 어떻게 보면 병렬성이 보장되는 이유기도 하다. (각 코어마다 `run queue`가 존재하기에 이상적으로 4개의 작업이 4개의 코어의 `run queue`가 비워져있다면, 동시수행 가능)
 
-참고 : https://github.com/torvalds/linux/blob/master/kernel/sched/sched.h#L957-L1030
-
 #### 1.2.2 Wait Queue
 
-![](https://i.imgur.com/VZzy5ob.png)
+<p align="center">
+    <img src="https://i.imgur.com/VZzy5ob.png">
+</p>
+<p align="center">
+    <em><a href="https://cs4118.github.io/www/2023-1/lect/10-run-wait-queues.html">그림 5. Wait Queue, COMS W4118 Operating Systems 1 - Columbia univ, 2023</a></em>
+</p>
+
 
 `Wait Queue`는 `Run Queue`와 `TASK_INTERRUPTIBLE` 혹은 `TASK_UNINTERRUPTIBLE` 상태를 가진 작업과 연결이 된다. 
-
-참고 : https://github.com/torvalds/linux/blob/master/include/linux/wait.h#L30-L43
 
 이 과정에 대한 이벤트 루프 방식은 아래와 같다.
 
@@ -111,7 +132,7 @@ categories: 개발 인프라 독서요약
 
 이러한 이벤트 루프가 존재하며, 1-4를 계속 반복한다고 보면 된다. 
 
-## 리눅스 내에서 기본적인 스케줄링 
+### 1.3 리눅스 내에서 기본적인 스케줄링 
 
 먼저, [linux/kernel/sched/core.c](https://github.com/torvalds/linux/blob/master/kernel/sched/core.c#L6591-L6718) 쪽을 보면 `schedule()` 이라는 함수가 있음을 확인할 수 있다.
 
@@ -138,9 +159,16 @@ categories: 개발 인프라 독서요약
 		+ 조건이 `false`면 : 계속 휴면상태에 있음
 		+ 조건이 `true`면 : 휴면상태를 끝내고, [finish_wait()](https://github.com/torvalds/linux/blob/master/include/linux/wait.h#L320C2-L320C13) 함수를 호출하여 Wait Queue에 작업을 제거 
 
-### 1.3 프로세스 상태 변화 
+#### 1.3.1 프로세스 상태 변화 
 
-![](https://i.imgur.com/8492Pvm.png)
+
+<p align="center">
+    <img src="https://i.imgur.com/8492Pvm.png">
+</p>
+<p align="center">
+    <em><a href="https://cs4118.github.io/www/2023-1/lect/10-run-wait-queues.html">그림 6. Process State Transitions, COMS W4118 Operating Systems 1 - Columbia univ, 2023</a></em>
+</p>
+
 
 위 상태에서 `read()`라는 시스템콜이 유저모드에서 발생할 시 아래와 같이 처리가 된다. 
 
@@ -157,13 +185,18 @@ categories: 개발 인프라 독서요약
 7. 다른 프로세스를 수행 
 	+ 여기서, 휴면상태에서 다시 동작하게끔 변경이 되었다면 이 프로세스는 `read()` 함수를 호출한 프로세스일 수도 있으며 아닐 경우 다른 프로세스일 수 있다. 
 
-## 가상 주소 공간
+### 1.4 가상 주소 공간
 
 C나 CPP같은 언어를 써서 `malloc()` 같은 시스템 메모리(Physical Memory)를 요구하는 함수를 호출한다 가정했을 때, 우리는 뭔가 `malloc()`을 호출하면 당연하게도 어떠한 시스템 메모리에 영역을 할당받는다고 생각했을 것이다.
 
 하지만, 리눅스에서도 가상 메모리라는 개념을 활용한다. 이는 SWAP 영역과는 별개의 가상 메모리라고 보면 될 것같다. 
 
-![](https://i.imgur.com/7uArXuJ.png)
+<p align="center">
+    <img src="https://i.imgur.com/7uArXuJ.png">
+</p>
+<p align="center">
+    <em>그림 7. 리눅스의 가상 주소 공간 매핑 예시</a></em>
+</p>
 
 > 위에서는 `malloc()` 호출 시 시스템 콜이 발생되는 가정으로 하였는데 실제로는 발생안하는 케이스도 있으니 참고하기 바란다.
 
@@ -171,9 +204,7 @@ C나 CPP같은 언어를 써서 `malloc()` 같은 시스템 메모리(Physical M
 
 참고로, MMU나 가상 메모리를 사용하지 않는 시스템의 경우도 있다.
 
-참고 : https://docs.kernel.org/admin-guide/mm/concepts.html
-
-### 1.4 MMIO(Memory Mapped I/O)
+### 1.5 MMIO(Memory Mapped I/O)
 
 MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처리하기 위해서 사용하는 방식이다.
 
@@ -182,7 +213,13 @@ MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처
 
 이런 과정은 어떻게 보면 느리며, 복잡할 수 있다. 이에 대한 대안은 파일의 영역을 가상 주소 공간에 매핑시키는 것이다. 아래와 같이 말이다.
 
-![](https://i.imgur.com/AfVhSnr.png)
+<p align="center">
+    <img src="https://i.imgur.com/AfVhSnr.png">
+</p>
+<p align="center">
+    <em><a href="https://cs4118.github.io/www/2023-1/lect/09-syscalls.html">그림 8. File-backed mappings, COMS W4118 Operating Systems 1 - Columbia univ, 2023</a></em>
+</p>
+
 
 매핑된 영역은 디스크에 의해 지원이 되는데 메모리 매핑된 영역에 대한 업데이트는 먼저 메모리로 가고, 후에 디스크로 플러시 된다고 보면된다. 
 
@@ -191,7 +228,7 @@ MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처
 2. Shared Mapping : 같은 메모리를 참조하며, 이런식으로 매핑된 데이터를 가진 프로세스는 서로의 업데이트를 확인할 수 있다.
 
 실제 동작원리는 잘 쓰여진 포스팅이 있어서 이로 대체한다.
-+ 참고 : https://pr0gr4m.tistory.com/entry/Linux-Kernel-5-mmap
++ 참고 : [Linux Kernel 5 mmap(매모리매핑) - Art of Pr0gr4m](https://pr0gr4m.tistory.com/entry/Linux-Kernel-5-mmap)
 
 위에서는 File에 대한 매핑에 대한 예시라면, 때때로 파일에 의해 백업되지 않은 메모리를 매핑할 수도 있으면 좋겠다라는 요구사항이 발생할 수 있다.(`malloc()` 과 같은)
 
@@ -226,16 +263,18 @@ MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처
 
 `MAP_SHARED` : 자식 프로세스는 메모리 매핑을 공유하며, 서로의 업데이트를 볼 수 있다. 이렇게 될 경우 IPC 형태라 볼 수 있는데 이 방식으로 생성된 자식 프로세스는 `pipe()`와 같이 사용된다. 비슷한 IPC 형태는 공유 메모리에 의한 IPC라 보면될 것이다.
 
-참고 : http://csl.snu.ac.kr/courses/4190.307/2020-1/9-mmap.pdf
-
 ## 2. 본론
 
 이제 본론으로 들어와보자.
 
 사실 위 내용을 다뤘던 이유는 현재 스터디 중인 책과 관련이 있다.
 
-![](https://i.imgur.com/Wr6OE3y.png)
-
+<p align="center">
+    <img src="https://i.imgur.com/Wr6OE3y.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 9. DevOps와 SE를 위한 리눅스 커널 , 강진우 저, 2017</a></em>
+</p>
 
 현재, 이 책에 대한 스터디를 진행 중이었고, 1 ~ 3장을 각자 정리를 해오자라고 얘기가 나왔는데 보다 심층적으로 파악할 필요가 있어서 위와 같은 배경지식을 설명해보았다. 
 이제 본격적으로 이 책에서 다뤘던 내용을 다뤄보고자한다.
@@ -250,7 +289,13 @@ MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처
 
 이 중에서 우리가 중점적으로 볼 지표는 `VIRT`, `RES`, `SHR` 이다.
 
-![](https://i.imgur.com/sI9WtTX.png)
+<p align="center">
+    <img src="https://i.imgur.com/sI9WtTX.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 10. VIRT, RES, SHR의 관계, DevOps와 SE를 위한 리눅스 커널, p.24</a></em>
+</p>
+
 
 1. `VIRT` : `RES`와 `SHR` 그리고 SWAP영역까지 프로세스가 사용되는 메모리의 전체 용량
 2. `RES` :  프로세스가 사용 중인 물리 메모리(Physical Memory)의 용량
@@ -260,7 +305,7 @@ MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처
 
 찾아보니 `VIRT`가 나타내는 메모리 총 용량은 아래와 같이 계산된다.
 
-$VIRT = RES + SWAP + SHR$
+$$VIRT = RES + SWAP + SHR$$
 
 즉, 물리메모리, 공유메모리, 가상메모리(SWAP)에 대한 프로세스가 점유하고 있는 메모리 총 용량이라고 볼 수 있다.
 따라서, `VIRT`를 통해서 어떤 프로세스가 스왑메모리를 많이 사용하는지도 파악이 가능할 수 있다.
@@ -269,7 +314,7 @@ $VIRT = RES + SWAP + SHR$
 이를 토대로 `SWAP` 을 최소화해서 사용해야하는 어플리케이션의 사용량을 추적할 수도 있어보인다.
 
 어떤 케이스에 SWAP 영역을 최소화 해야되는지 궁금하다면 제 블로그의 아래의 아티클을 읽어보기를 추천한다.
-+ https://brewagebear.github.io/fundamental-os-page-cache/
++ 참고 : [왜 처리량이 중요한 JVM 어플리케이션은 vm.swappiness = 1로 설정하라고 할까?](https://brewagebear.github.io/fundamental-os-page-cache/)
 
 그리고 `VIRT`가 Virtual을 나타내는 것과 같이 보이는데 위에서 얘기했던 내용에 대해서 첨언하면, `VIRT`는 **가상 주소 공간에 대한 용량이 맞다**고 보면 된다.
 
@@ -285,13 +330,18 @@ $VIRT = RES + SWAP + SHR$
 
 서론에서 얘기한 바와 같이 `malloc()` 등으로 메모리 할당을 요청하면 가상 주소 공간에 대한 주소를 넘겨준다. 
 
-![](https://i.imgur.com/wXo9CGA.png)
+<p align="center">
+    <img src="https://i.imgur.com/wXo9CGA.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 11. VIRT, RES, SHR의 관계, DevOps와 SE를 위한 리눅스 커널, p.25</a></em>
+</p>
 
 하지만, 이때도 실제 물리 메모리에 해당 영역이 할당된 상태는 아니라는 것이다. 
 예약은 해두고 가상 주소 공간에서 주소를 넘겨받는 이러한 동작 방식을 `Memory Commit` 이라 한다.
 
 그러면 실제 물리 메모리에 언제 바인딩이 될까? 그것은 바로 직접적으로 쓰기 작업이 발생할 때이다.
-쓰기 작업을 수행하면 페이지 부재(Page Fault)가 발생할 것이고 내부적인 매커니즘에 따라서 처리가 된다. 
+쓰기 작업을 수행하면 페이지 부재(Page Fault)가 발생할 것이고 내부적인 매커니즘에 따라서 처리가 된다. (참고로, 페이지 부재(Page Fault)에 대한 처리는 아키텍처마다 다르다.)
 
 ```c
 /*
@@ -310,9 +360,11 @@ if (unlikely(is_vm_hugetlb_page(vma))) ret = hugetlb_fault(vma->vm_mm, vma, addr
 else ret = __handle_mm_fault(vma, address, flags);
 ```
 
-참고 코드 1 : https://github.com/torvalds/linux/blob/master/arch/arm64/mm/fault.c#L500C1-L500C1
-참고 코드 2 : https://github.com/torvalds/linux/blob/master/mm/memory.c#L5201
-참고 코드 3 : https://github.com/torvalds/linux/blob/master/mm/page_alloc.c#L4594C5-L4594C5
++ 참고 코드 1 : [linux/arch/arm64/mm/fault.c](https://github.com/torvalds/linux/blob/master/arch/arm64/mm/fault.c#L500C1-L500C1)
+
++ 참고 코드 2 : [linux/mm/memory.c](https://github.com/torvalds/linux/blob/master/mm/memory.c#L5201)
+
++ 참고 코드 3 : [linux/mm/page_alloc.c](https://github.com/torvalds/linux/blob/master/mm/page_alloc.c#L4594C5-L4594C5)
 
 즉, 새로 할당을 하는 케이스면 4번에 해당될 것이고 새로운 제로 페이지를 할당 받는 것이다.  
 이렇게 바인딩된 값을 페이지 테이블(Page Table)이라 부르며, 물리 메모리에 실제 바인딩된 영역이 `RES`로 계산된다.
@@ -371,11 +423,21 @@ int main() {
 그래서 COW(Copy-On-Write)라는 기법을 통해서 복사된 메모리에 실제 쓰기 작업이 발생한 후에야 실질적인 메모리 할당을 시작한다.
 이를 위해서 메모리 커밋이 필요하다. 
 
-![](https://i.imgur.com/ODNgVTH.png)
+<p align="center">
+    <img src="https://i.imgur.com/ODNgVTH.png">
+</p>
+<p align="center">
+    <em><a href="http://csl.snu.ac.kr/courses/4190.307/2020-1/9-mmap.pdf">그림 12. COW(Copy-On-Write), Memory Mapping, SNU</a></em>
+</p>
 
 위는 `fork()` 시스템 콜 상황에서 COW가 동작하는 원리를 보여준다. 이렇게 처리되기 때문에 메모리 커밋이 없으면 다음과 같은 상황이 발생할 수 있다.
 
-![](https://i.imgur.com/h0lAhWM.png)
+<p align="center">
+    <img src="https://i.imgur.com/h0lAhWM.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 13. fork()와 Memory Commit, DevOps와 SE를 위한 리눅스 커널, p.28</a></em>
+</p>
 
 1기가의 가용메모리가 있고, 3GB의 프로세스를 `fork()` 를 통해서 복제한 상황이다. 이 케이스에 만약, 메모리 커밋처럼 지연처리가 없다면 OOM과 같은 문제도 발생할 수 있다.
 어쨋든 메모리 커밋으로 위와 같은 상황에서도 오버커밋이 되긴했지만 쓰이기 전까지는 지연처리 되니 보다 안정성을 제공한다 볼 수 있다.
@@ -408,15 +470,32 @@ int main() {
 위 값을 잘보면 우리가 서론에서 Run Queue와 Wait Queue를 다루면서 했던 내용과 흡사하다고 볼 수 있다.
 우리는 어느정도 이 개념에 대해서 알고 있으니 바로 프로세스 상태 변화표를 확인해보자. 
 
-![](https://i.imgur.com/zmNE7a6.png)
+
+<p align="center">
+    <img src="https://i.imgur.com/zmNE7a6.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 14. 프로세스 상태 변화, DevOps와 SE를 위한 리눅스 커널, p.28</a></em>
+</p>
 
 아마도 서론을 잘 읽었던 분이라면 이 부분에 대해서 이해하기 수월할 것이라고 생각한다.  위에서 다루지 않았던 내용은 좀비 상태 뿐인데 이건 아래의 표로 설명이 가능하다.
 
-![](https://i.imgur.com/dVDQC44.png)
+<p align="center">
+    <img src="https://i.imgur.com/dVDQC44.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 15. 프로세스 생성과 종료, DevOps와 SE를 위한 리눅스 커널, p.33</a></em>
+</p>
+
 
 위 그림은 `fork()`를 통해서 자식 프로세스가 생성되는 모습을 보여주고 있다. 이런 케이스에 부모 프로세스가 죽었는데 자식 프로세스가 남아 있거나 자식 프로세스의 비정상 동작으로 부모 프로세스가 죽을 수 있다.
 
-![](https://i.imgur.com/4wG4l9Q.png)
+<p align="center">
+    <img src="https://i.imgur.com/4wG4l9Q.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 16. 좀비 프로세스가 되는 경우, DevOps와 SE를 위한 리눅스 커널, p.33</a></em>
+</p>
 
 위와 같은 케이스가 좀비 프로세스가 된다고 보면 된다. 좀비 프로세스는 시스템의 리소스를 차지하지 않으므로 큰 문제는 되지 않으나 PID는 대략 65536개로 생성이 가능하기때문에 이 PID를 점유하고 있고, 새로운 프로세스가 할당될 PID가 부족하여 PID 고갈을 야기할 수 있다.
 
@@ -430,7 +509,12 @@ int main() {
 Run Queue와 Wait Queue 과정에서 각 프로세스들이 어떻게 휴면상태로 바뀌고 다시 런상태로 바뀌고, 스케줄러가 해당 태스크들을 처리한다고 하였다.
 이때, 실행될 프로세스의 우선순위를 통해서 스케줄러가 디스패처라는 개념에게 해당 프로세스에 대한 정보를 넘겨준다고 보면된다.
 
-![](https://i.imgur.com/bXW9o3Q.png)
+<p align="center">
+    <img src="https://i.imgur.com/bXW9o3Q.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 17. 스케줄러의 기본 동작, DevOps와 SE를 위한 리눅스 커널, p.35</a></em>
+</p>
 
 그렇다면, `PR`과 `NI` 지표는 어떤 것을 나타낼까?
 
@@ -491,7 +575,13 @@ VM으로 단일 코어로 처리했을 경우에 나오는 결과이다.
 
 이유는 바로 병렬성과 관련되어있다. 
 
-![](https://i.imgur.com/w1oQ1VG.png)
+<p align="center">
+    <img src="https://i.imgur.com/w1oQ1VG.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 18. nice의 효과를 못 받는 경우, DevOps와 SE를 위한 리눅스 커널, p.37</a></em>
+</p>
+
 
 2개 코어라고 가정하였을 경우 각각 코어 마다 Run Queue가 위치한다고 말했었다. 그러다보니 nice 값을 낮춰도 다른 코어에서 프로세스를 충분히 돌릴 수 있다면 nice 값을 낮춘 프로세스보다 빨리 끝날 수 있다.
 실제 시작할 프로세스에 대한 nice 값은 `nice` 명령어로 처리할 수 있으며, 동작 중인 프로세스에 대한 핸들링은 `renice` 명령을 통해서 낮출 수 있다.
@@ -509,8 +599,13 @@ VM으로 단일 코어로 처리했을 경우에 나오는 결과이다.
 
 이는 위에서 본 바와 같이 CPU 코어 수에 따라서 상대적이다.
 
+<p align="center">
+    <img src="https://i.imgur.com/OtiERRi.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 19. CPU 코어와 프로세스의 관계, DevOps와 SE를 위한 리눅스 커널 이야기, p.42</a></em>
+</p>
 
-![](https://i.imgur.com/OtiERRi.png)
 
 두 개 모두 Load Average값은 2의 근사 값이 나올 것이다. (프로세스의 개수를 뜻하기 때문에) 그러나, 단일 코어일 경우에는 Run Queue에 두 개의 프로세스가 있으며, 듀얼 코어일 경우에는 각 Run Queue에 분리되어서 동작한다. 
 즉, 병렬성이 보장되므로 듀얼코어인 케이스가 싱글코어인 케이스보다 대기 상태가 적을 수 밖에 없다.
@@ -559,13 +654,18 @@ long calc_load_fold_active(struct rq *this_rq, long adjust)
 
 ```
 
-참고 : https://github.com/torvalds/linux/blob/master/kernel/sched/loadavg.c#L71C1-L76
-참고 2 : https://github.com/torvalds/linux/blob/master/kernel/sched/loadavg.c#L349C1-L380C1
-참고 3 : https://github.com/torvalds/linux/blob/master/kernel/sched/loadavg.c#L78-L91
++ 참고 코드 1: [linux/kernel/sched/loadavg.c - L71 ~ 76](https://github.com/torvalds/linux/blob/master/kernel/sched/loadavg.c#L71C1-L76)
++ 참고 코드 2 : [linux/kernel/sched/loadavg.c - - L349 ~ 380](https://github.com/torvalds/linux/blob/master/kernel/sched/loadavg.c#L349C1-L380C1)
++ 참고 코드 3 : [linux/kernel/sched/loadavg.c - L78 ~ 91](https://github.com/torvalds/linux/blob/master/kernel/sched/loadavg.c#L78-L91)
 
 책에서 사용하는 커널버전과 다르다보니 좀 더 변경된 부분이 있으나, 매번 Tick 주기에 호출되는 [schedule_tick(void)](https://github.com/torvalds/linux/blob/master/kernel/sched/core.c#L5640) 함수를 보면 책에 나온 `calc_laod_account_active()` 함수 대신 `calc_global_load_tick()` 함수로 변경되었고, 이 함수 내부적으로 `calc_load_fold_active()` 함수를 호출하는 방식을 볼 수 있다.
 
-![](https://i.imgur.com/awmZ9Ts.png)
+<p align="center">
+    <img src="https://i.imgur.com/awmZ9Ts.png">
+</p>
+<p align="center">
+    <em><a href="https://www.yes24.com/Product/Goods/44376723">그림 20. Load Average의 계산 과정, DevOps와 SE를 위한 리눅스 커널 이야기, p.47</a></em>
+</p>
 
 위 내용을 정리하면 위와 같이 볼 수 있다. 함수명은 위에서 말한 듯이 커널 버전이 올라감에 따라 달라진 부분이 있으니 참고바란다.
 결국 서두에서도 얘기했듯 R과 D 상태의 프로세스의 개수를 세는 것을 Load Average로 볼 수 있다.
@@ -673,4 +773,8 @@ CPU Bound 어플리케이션을 수행 후에 확인해보자.
 3. [The Liunx Scheduling Algorithm - Team LiB](http://books.gigatux.nl/mirror/kerneldevelopment/0672327201/ch04lev1sec2.html)
 4. [wait Queue - 달려라](https://blog.naver.com/sysapi/20011482139)
 5. [Memory Mapping - Seoul National University](http://csl.snu.ac.kr/courses/4190.307/2020-1/9-mmap.pdf)
-6. [현직 대기업 개발자 푸와 함께하는 진짜 백엔드 시스템 실무!](https://class101.net/classic/products/T6HT0bUDKIH1V5i3Ji2M)
+6. [Concepts overview - The Linux Kernel Admin Guide](https://docs.kernel.org/admin-guide/mm/concepts.html)
+# 읽을거리 
+
+1. [concurrency-vs-parallelism](https://freecontent.manning.com/concurrency-vs-parallelism/)
+2. [현직 대기업 개발자 푸와 함께하는 진짜 백엔드 시스템 실무!](https://class101.net/classic/products/T6HT0bUDKIH1V5i3Ji2M)
