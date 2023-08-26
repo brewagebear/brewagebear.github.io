@@ -17,9 +17,9 @@ categories: 개발 인프라 독서요약
 최근에 커널 책을 같이 읽고 정리하는 스터디를 시작하였다. 이를 다루기 앞서, 난이도가 조금 있다보니 배경지식이 조금 필요한 것으로 보인다. 
 이에 따라, 중요한 개념 몇가지만 짚고 이와 연관된 내용으로 같이 얘기를 해보고자 한다. 
 
-## 1. 서론 
+## STEP 1. 서론 
 
-### 1.1 병렬성과 동시성 
+### STEP 1.1 병렬성과 동시성 
 
 <p align="center">
     <img src="https://i.imgur.com/KW1ffSd.png">
@@ -60,7 +60,7 @@ categories: 개발 인프라 독서요약
 
 밑에서 Run Queue와 Wait Queue를 다루면서 컨텍스트 스위칭에 대한 내용을 다룰 것인데 이 개념을 이해하기 위해서 중요하다고 보면 된다.
 
-### 1.2 Run Queue와 Wait Queue
+### STEP 1.2 Run Queue와 Wait Queue
 
 ```c
 /* Used in tsk->state: */
@@ -87,7 +87,7 @@ categories: 개발 인프라 독서요약
 
 이제 실제 `Run Queue`의 구조를 보자. 
 
-#### 1.2.1 Run Queue
+#### STEP 1.2.1 Run Queue
 
 <p align="center">
     <img src="https://i.imgur.com/qW8dVbK.png">
@@ -110,7 +110,7 @@ categories: 개발 인프라 독서요약
 
 이것이 어떻게 보면 병렬성이 보장되는 이유기도 하다. (각 코어마다 `run queue`가 존재하기에 이상적으로 4개의 작업이 4개의 코어의 `run queue`가 비워져있다면, 동시수행 가능)
 
-#### 1.2.2 Wait Queue
+#### STEP 1.2.2 Wait Queue
 
 <p align="center">
     <img src="https://i.imgur.com/VZzy5ob.png">
@@ -132,7 +132,7 @@ categories: 개발 인프라 독서요약
 
 이러한 이벤트 루프가 존재하며, 1-4를 계속 반복한다고 보면 된다. 
 
-### 1.3 리눅스 내에서 기본적인 스케줄링 
+### STEP 1.3 리눅스 내에서 기본적인 스케줄링 
 
 먼저, [linux/kernel/sched/core.c](https://github.com/torvalds/linux/blob/master/kernel/sched/core.c#L6591-L6718) 쪽을 보면 `schedule()` 이라는 함수가 있음을 확인할 수 있다.
 
@@ -159,7 +159,7 @@ categories: 개발 인프라 독서요약
 		+ 조건이 `false`면 : 계속 휴면상태에 있음
 		+ 조건이 `true`면 : 휴면상태를 끝내고, [finish_wait()](https://github.com/torvalds/linux/blob/master/include/linux/wait.h#L320C2-L320C13) 함수를 호출하여 Wait Queue에 작업을 제거 
 
-#### 1.3.1 프로세스 상태 변화 
+#### STEP 1.3.1 프로세스 상태 변화 
 
 
 <p align="center">
@@ -185,7 +185,7 @@ categories: 개발 인프라 독서요약
 7. 다른 프로세스를 수행 
 	+ 여기서, 휴면상태에서 다시 동작하게끔 변경이 되었다면 이 프로세스는 `read()` 함수를 호출한 프로세스일 수도 있으며 아닐 경우 다른 프로세스일 수 있다. 
 
-### 1.4 가상 주소 공간
+### STEP 1.4 가상 주소 공간
 
 C나 CPP같은 언어를 써서 `malloc()` 같은 시스템 메모리(Physical Memory)를 요구하는 함수를 호출한다 가정했을 때, 우리는 뭔가 `malloc()`을 호출하면 당연하게도 어떠한 시스템 메모리에 영역을 할당받는다고 생각했을 것이다.
 
@@ -204,7 +204,7 @@ C나 CPP같은 언어를 써서 `malloc()` 같은 시스템 메모리(Physical M
 
 참고로, MMU나 가상 메모리를 사용하지 않는 시스템의 경우도 있다.
 
-### 1.5 MMIO(Memory Mapped I/O)
+### STEP 1.5 MMIO(Memory Mapped I/O)
 
 MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처리하기 위해서 사용하는 방식이다.
 
@@ -263,7 +263,7 @@ MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처
 
 `MAP_SHARED` : 자식 프로세스는 메모리 매핑을 공유하며, 서로의 업데이트를 볼 수 있다. 이렇게 될 경우 IPC 형태라 볼 수 있는데 이 방식으로 생성된 자식 프로세스는 `pipe()`와 같이 사용된다. 비슷한 IPC 형태는 공유 메모리에 의한 IPC라 보면될 것이다.
 
-## 2. 본론
+## STEP 2. 본론
 
 이제 본론으로 들어와보자.
 
@@ -281,7 +281,7 @@ MMIO는 위 가상메모리와 비슷하게, I/O 작업을 좀 더 빠르게 처
 
 초점은 2 ~ 3장과 관련된 내용이라고 보면될 것이다.
 
-### 2.1 VIRT & RES & SHR
+### STEP 2.1 VIRT & RES & SHR
 
 먼저, 리눅스의 top 명령어를 입력하게 되면 아래와 같은 화면을 볼 수 있다. 
 
@@ -323,7 +323,7 @@ $$VIRT = RES + SWAP + SHR$$
 
 오해의 소지가 있어보이므로 앞으로 물리 메모리와 실제 매핑되서 MMU에 관리되는 부분을 가상 주소 공간, 보조기억장치와 메모리 영역 사이에서 관리되는 부분을 SWAP이라고 명시하도록 하겠다.
 
-### 2.2 Memory Commit
+### STEP 2.2 Memory Commit
 
 자 그러면, 리눅스에서 왜 `VIRT`와 `SHR`를 따로 나눠서 관리를 할까? 
 이는 메모리 커밋과 관련이 있다.
@@ -450,7 +450,7 @@ int main() {
 | 1             | 무조건 commit을 진행한다. 아무것도 계산하지 않으면 요청 온 모든 메모리에 대한 commit이 발생한다.                              |
 | 2             | 제한적으로 commit을 진행한다. `vm.overcommit_ratio`에 대한 비율과 swap 영역에 대한 크기를 토대로 계산된다. (/proc/meminfo 에서 확인가능)                                                                                                                              |
 
-### 2.3 프로세스의 상태 
+### STEP 2.3 프로세스의 상태 
 
 위에서는 `VIRT`, `RES`, `SHR`를 다루면서 메모리 커밋에 대해서도 다뤘었다. 이제 `top` 명령어를 볼 수 있는 지표 중에 프로세스의 상태를 보는 지표를 확인할 차례이다.
 
@@ -588,7 +588,7 @@ VM으로 단일 코어로 처리했을 경우에 나오는 결과이다.
 
 이때 사용되는 스케줄 방식이 바로 CFS(Completely Fair Scheduling)이다.
 
-### 3. Load Averrage와 시스템 부하 
+### STEP 3. Load Averrage와 시스템 부하 
 
 리눅스에서는 Load Average를 아래와 같이 정의한다.
 
@@ -670,7 +670,7 @@ long calc_load_fold_active(struct rq *this_rq, long adjust)
 위 내용을 정리하면 위와 같이 볼 수 있다. 함수명은 위에서 말한 듯이 커널 버전이 올라감에 따라 달라진 부분이 있으니 참고바란다.
 결국 서두에서도 얘기했듯 R과 D 상태의 프로세스의 개수를 세는 것을 Load Average로 볼 수 있다.
 
-#### 3.1 CPU Bound vs I/O Bound
+#### STEP 3.1 CPU Bound vs I/O Bound
 
 따라서, Load Average 값이 높은 부분은 CPU가 많이 사용되는 프로세스(R)가 많을 수도 있고, I/O 대기에 따른 프로세스(D)가 많아서 일수 있다.
 즉, 이 값만으로는 어떤 부하가 시스템이 겪고 있는지 알기가 힘든 것이다. 
@@ -778,3 +778,5 @@ CPU Bound 어플리케이션을 수행 후에 확인해보자.
 
 1. [concurrency-vs-parallelism](https://freecontent.manning.com/concurrency-vs-parallelism/)
 2. [현직 대기업 개발자 푸와 함께하는 진짜 백엔드 시스템 실무!](https://class101.net/classic/products/T6HT0bUDKIH1V5i3Ji2M)
+3. [자바 NIO의 동작원리 및 IO 모델](https://brewagebear.github.io/fundamental-nio-and-io-models/)
+4. [왜 처리량이 중요한 JVM 어플리케이션은 vm.swappiness = 1로 설정하라고 할까?](https://brewagebear.github.io/fundamental-os-page-cache/)
