@@ -86,9 +86,9 @@ struct task_struct {
 }
 ```
 
-위 코드에서 중점적으로 볼 내용은 `mm_struct` 이다.  태스크도 `task_struct` 를 통해서 만들어진다고 하였는데 그렇다면 우리가 기존에 알고 있던 `stack` , `heap` 영역은 어디에 할당되는지 궁금하지 않은가? 그 공간이 바로 `mm_struct` 구조체로 관리된다.
+위 코드에서 중점적으로 볼 내용은 `mm_struct` 이다.  태스크도 `task_struct` 를 통해서 만들어진다고 하였는데 그렇다면 우리가 기존에 알고 있던 `stack` , `heap` 영역은 어디에 할당되는지 궁금하지 않은가? 
 
-이 구조체는 가상 주소 공간을 관리하기 위한 여러 정보를 포함하고 있다. 
+그 공간이 바로 `mm_struct` 구조체로 관리된다. 이 구조체는 가상 주소 공간을 관리하기 위한 여러 정보를 포함하고 있다. 
 
 ```c
 // https://github.com/torvalds/linux/blob/master/include/linux/mm_types.h#L598
@@ -120,6 +120,7 @@ struct mm_struct {
 </p>
 
 프로세스 내부의 `mm_struct` 를 시각화한 그림이다. 우리가 힙 영역을 늘리고 싶다면, `brk()` 라는 시스템 콜을 통해서 늘리거나 줄일 수 있다.
+
 `brk()` 시스템콜은 프로그램 브레이크(Program Break)[^3] 를 제어하는 시스템 콜이라고 보면 된다. 위에서 보면 알겠지만 `brk` 라는 값을 통해서 `heap` 크기를 늘리고 줄일 수 있는 것을 볼 수 있다.
 
 이 `brk()` 시스템 콜을 통해 프로그램 브레이크를 증가시키면, **프로세스에 메모리가 할당**되고 감소하면 **프로세스의 메모리를 해제**할 수 있는 것이다.
@@ -212,19 +213,22 @@ struct vm_area_struct {
 	+ 참고 : [Linux – vm_flags vs vm_page_prot, iTecNote](https://itecnote.com/tecnote/linux-vm_flags-vs-vm_page_prot/)
 
 이 후 값은 MMIO에 대한 이해가 필요하니 이전 포스팅에서 익명 매핑(Anonymous Mapping)과 파일 매핑(File-backed Mapping)에 대해서 알고 오길 추천드린다.
+ 
 위에서 `anon_vma, anon_vma_chain` 은 익명 매핑 시에 사용되고, `vm_pgoff, vm_file`은 파일 매핑 시에 사용이 된다.
 
 두 가지 구조로 따로 나눈 이유는 역방향 매핑과 관련되어 있는데 이 부분은 페이징때 자세히 다루도록 하고 간단하게 링크만 달아두도록 하겠다.
-+ 참고 : [Reverse mapping of anonymous pages in Linux, SoByte](https://www.sobyte.net/post/2022-08/linux-anonymous-pages-reverse-mapping/)
 
 + `vm_file` : 파일 매핑을 사용할 경우 사용되는 실제 파일에 대한 링크를 갖는 구조체 
 + `vm_pageoff` : 해당 파일 내의 offset을 나타낸다.
 
 + `anon_vma` : 익명 매핑을 사용할 경우 사용되는 구조체 
 + `anon_vma_chain` : `anon_vma` 만 사용하였을 경우 문제점을 해결하기 위해 도입된 필드 
-	+ 익명 역 매핑(Anonymous Page Reverse Mapping) 매커니즘은 페이지 매핑을 해제한 후 매핑될 PTE(Page Table Entry)[^9] 찾기 위해 전체 연결 목록인 `vma`에 액세스한 후 순회하여 연결 목록에 액세스하는데 `fork()`를 통해 복사된 하위 프로세스에서 쓰기 액세스가 발생하면 `vma`에 새 익명 페이지가 할당되고, `vma`는 이 익명 페이지를 가르키게 되는데 이 페이지가 `vma`에 반영되지 않는 문제점이 존재하였음.
 
-이제 `tast_struct` 와 `mm_struct`, `vm_area_struct` 구조체에 대해 중요한 부분을 위주로 다뤄봤는데 리눅스 커널에서 프로세스가 할당되어 사용되는 구조를 각 구조체를 통해서 나타내면 아래와 같다. 
+> 익명 역 매핑(Anonymous Page Reverse Mapping) 매커니즘은 페이지 매핑을 해제한 후 매핑될 PTE(Page Table Entry)[^9] 찾기 위해 전체 연결 목록인 `vma`에 액세스한 후 순회하여 연결 목록에 액세스하는데 `fork()`를 통해 복사된 하위 프로세스에서 쓰기 액세스가 발생하면 `vma`에 새 익명 페이지가 할당되고, `vma`는 이 익명 페이지를 가르키게 되는데 이 페이지가 `vma`에 반영되지 않는 문제점이 존재하였음.
+
++ 참고 : [Reverse mapping of anonymous pages in Linux, SoByte](https://www.sobyte.net/post/2022-08/linux-anonymous-pages-reverse-mapping/)
+
+리눅스 커널에서 프로세스가 할당되어 사용되는 구조를 각 구조체를 통해서 나타내면 아래와 같다. 
 
 <p align="center">
     <img src="https://i.imgur.com/sRBzgjS.png">
@@ -235,6 +239,7 @@ struct vm_area_struct {
 
 
 `vm_next, vm_prev` 는 메이플 트리 도입[^9] 이후로 삭제가 되었고, `mm_struct`가 가르키는 것이 `mmap` 이 아니라 `mm_mt`로 변경되긴 해야겠지만 전반적인 큰 틀은 흡사하므로 이해할 수 있을 것이다.
+
 해당 그림을 이해를 못하겠다면 다시 한번 읽어보는 것을 추천드린다.  위에서 강조한 내용처럼 **지금까지 다룬 구조체들은 커널에서 가장 중요한 구조체들**이다.
 
 ## STEP 1.4 프로세스가 가상 주소 공간에 매핑되는 방식
@@ -314,6 +319,7 @@ struct vm_area_struct {
 ### STEP 1.4.1 페이지
 
 나중에 페이징을 별도로 포스팅할 예정인데 그 전에 리눅스 메모리 관리에 이해하려면 어찌됐든 페이지에 대해서 알긴 해야되서 간단하게 코드만 보고자 한다.
+
 각 물리적 프레임(Physical Frame)[^11]은 `struct page`라 부르는 페이지 값을 가지게 되는데 이 값은 물리적 프레임에 대한 메타데이터를 담고 있다.
 
 실제로 글로벌 메모리를 설정하는 부분에 전역 배열로 `struct page` 값을 사용한다.
@@ -390,6 +396,7 @@ static inline void kunmap(struct page *page);
 ```
 
 이 메서드는 `Highmem` 프레임을 `Lowmem`에 있는 것처럼 참조할 수 있도록 매핑을 생성하며, 이미 사용하고자하는 프레임이 `Lowmem`에 존재한다면 주소를 반환한다.
+
 이와 같은 **메서드를 통해 프레임이 메모리에서 어디있는지 걱정하지 않고 사용**할 수 있게 된다.
 그러나, 이 매핑에도 제한적인 부분이 존재하므로 `kunmap()` 을 통해서 매핑을 해제해줘야한다.
 
@@ -484,9 +491,7 @@ LRU(Least Recently Used)의 약어로 잘 안쓰였던 페이지부터 교체하
 	+ 이때 좌천이 발생할 경우 `flush()` 가 호출되어 실제 디스크에 기록이 된다.
 
 참고로, 이 구조는 MySQL의 버퍼풀이 그대로 따르고 있으니 참고해보기 바란다.
-+ 참고 : [
-[MySQL] Innodb Buffer Pool 구조 및 캐시 전략
-](https://omty.tistory.com/58)
++ 참고 : [MySQL Innodb Buffer Pool 구조 및 캐시 전략, 고양이 중독](https://omty.tistory.com/58)
 
 ## STEP 2. 본론
 
@@ -525,7 +530,6 @@ Swap:           3910           0        3910
 사실 이 개념은 페이지 캐시도 동일하다. 커널 2.2 이전에는 두 영역이 분리되어있었지만 합치게 되면서 대부분 페이지 캐시가 담당하는 역할이 되었다.
 
 그럼에도 아직까지 버퍼 영역을 사용하는 부분이 있는데 아래의 그림을 잠깐 보자.
-![](https://i.imgur.com/DnIcuIh.png)
 
 <p align="center">
     <img src="https://i.imgur.com/DnIcuIh.png">
@@ -723,7 +727,7 @@ Slab은 무엇이길래 따로 이런식으로 관리를 해주는 것일까?
 
 이렇게 큰 영역을 할당 받아서 커널이 사용하게 되면 단편화(Fragmentation)[^16] 현상도 발생할 수 있다. 이에 별도로 관리한다. 
 
-**즉, `Slab`은 메모리 영역 중 커널이 직접 사용하는 영역이라고 볼 수 있으며 페이지 단위로 관리되기에는 단편화 문제 등이 발생할 수 있기 때문에 `Slab` 영역으로 따로 관리하는 것이다. **
+**즉, `Slab`은 메모리 영역 중 커널이 직접 사용하는 영역이라고 볼 수 있으며 페이지 단위로 관리되기에는 단편화 문제 등이 발생할 수 있기 때문에 `Slab` 영역으로 따로 관리하는 것이다.**
 
 이 `Slab` 은 `cat /proc/meminfo` 를 통해서 확인할 수 있다. 
 
@@ -832,11 +836,10 @@ SUnreclaim:        35140 kB
 1. [Linux Memory Management,  COMS W4118 Operating Systems 1](https://cs4118.github.io/www/2023-1/lect/21-linux-mm.html)
 2. [System Calls,  COMS W4118 Operating Systems 1](https://cs4118.github.io/www/2023-1/lect/09-syscalls.html)
 3. [Processes, Linux Kernel Labs](https://linux-kernel-labs.github.io/refs/heads/master/lectures/processes.html)
-4. [[ Linux Kernel ] task_struct structure, Aiden](https://41d3n.xyz/272)
+4. [Linux Kernel task_struct structure, Aiden](https://41d3n.xyz/272)
 5. [리눅스의 태스크 모델, 'task_struct' 자료구조, jinh2352](https://velog.io/@jinh2352/Linux-5-%EB%A6%AC%EB%88%85%EC%8A%A4%EC%9D%98-%ED%83%9C%EC%8A%A4%ED%81%AC-%EB%AA%A8%EB%8D%B8)
 6. [리눅스 페이지 캐시와 버퍼 캐시, 강진우님](https://brunch.co.kr/@alden/25)
-7. [The Maple Tree, A Modern Data Structure for a Complex Problem
-, Oracle Linux Blog](https://blogs.oracle.com/linux/post/the-maple-tree-a-modern-data-structure-for-a-complex-problem)
+7. [The Maple Tree, A Modern Data Structure for a Complex Problem, Oracle Linux Blog](https://blogs.oracle.com/linux/post/the-maple-tree-a-modern-data-structure-for-a-complex-problem)
 8. [리눅스 커널의 mm_struct / vm_area_struct 구조체, BlackStar](https://showx123.tistory.com/92)
 9. [Linux – vm_flags vs vm_page_prot, iTecNote](https://itecnote.com/tecnote/linux-vm_flags-vs-vm_page_prot/)
 10. [Reverse mapping of anonymous pages in Linux, Sobyte](https://www.sobyte.net/post/2022-08/linux-anonymous-pages-reverse-mapping)
