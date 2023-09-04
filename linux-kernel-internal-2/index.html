@@ -129,8 +129,8 @@
 	<span class="token keyword">struct</span> <span class="token class-name">mm_struct</span>		<span class="token operator">*</span>mm<span class="token punctuation">;</span>
 	<span class="token keyword">struct</span> <span class="token class-name">mm_struct</span>		<span class="token operator">*</span>active_mm<span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre></div>
-<p>위 코드에서 중점적으로 볼 내용은 <code class="language-text">mm_struct</code> 이다.  태스크도 <code class="language-text">task_struct</code> 를 통해서 만들어진다고 하였는데 그렇다면 우리가 기존에 알고 있던 <code class="language-text">stack</code> , <code class="language-text">heap</code> 영역은 어디에 할당되는지 궁금하지 않은가? 그 공간이 바로 <code class="language-text">mm_struct</code> 구조체로 관리된다.</p>
-<p>이 구조체는 가상 주소 공간을 관리하기 위한 여러 정보를 포함하고 있다.</p>
+<p>위 코드에서 중점적으로 볼 내용은 <code class="language-text">mm_struct</code> 이다.  태스크도 <code class="language-text">task_struct</code> 를 통해서 만들어진다고 하였는데 그렇다면 우리가 기존에 알고 있던 <code class="language-text">stack</code> , <code class="language-text">heap</code> 영역은 어디에 할당되는지 궁금하지 않은가?</p>
+<p>그 공간이 바로 <code class="language-text">mm_struct</code> 구조체로 관리된다. 이 구조체는 가상 주소 공간을 관리하기 위한 여러 정보를 포함하고 있다.</p>
 <div class="gatsby-highlight" data-language="c"><pre class="language-c"><code class="language-c"><span class="token comment">// https://github.com/torvalds/linux/blob/master/include/linux/mm_types.h#L598</span>
 <span class="token keyword">struct</span> <span class="token class-name">mm_struct</span> <span class="token punctuation">{</span>
 	<span class="token keyword">struct</span> <span class="token punctuation">{</span>
@@ -156,8 +156,8 @@
 <p align="center">
     <em>그림 4. 리눅스 가상 메모리 영역 시각화</em>
 </p>
-<p>프로세스 내부의 <code class="language-text">mm_struct</code> 를 시각화한 그림이다. 우리가 힙 영역을 늘리고 싶다면, <code class="language-text">brk()</code> 라는 시스템 콜을 통해서 늘리거나 줄일 수 있다.
-<code class="language-text">brk()</code> 시스템콜은 프로그램 브레이크(Program Break)<sup id="fnref-3"><a href="#fn-3" class="footnote-ref">3</a></sup> 를 제어하는 시스템 콜이라고 보면 된다. 위에서 보면 알겠지만 <code class="language-text">brk</code> 라는 값을 통해서 <code class="language-text">heap</code> 크기를 늘리고 줄일 수 있는 것을 볼 수 있다.</p>
+<p>프로세스 내부의 <code class="language-text">mm_struct</code> 를 시각화한 그림이다. 우리가 힙 영역을 늘리고 싶다면, <code class="language-text">brk()</code> 라는 시스템 콜을 통해서 늘리거나 줄일 수 있다.</p>
+<p><code class="language-text">brk()</code> 시스템콜은 프로그램 브레이크(Program Break)<sup id="fnref-3"><a href="#fn-3" class="footnote-ref">3</a></sup> 를 제어하는 시스템 콜이라고 보면 된다. 위에서 보면 알겠지만 <code class="language-text">brk</code> 라는 값을 통해서 <code class="language-text">heap</code> 크기를 늘리고 줄일 수 있는 것을 볼 수 있다.</p>
 <p>이 <code class="language-text">brk()</code> 시스템 콜을 통해 프로그램 브레이크를 증가시키면, <strong>프로세스에 메모리가 할당</strong>되고 감소하면 <strong>프로세스의 메모리를 해제</strong>할 수 있는 것이다.</p>
 <h2 id="step-13-가상-메모리-영역virtual-memory-area-vma" style="position:relative;"><a href="#step-13-%EA%B0%80%EC%83%81-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%98%81%EC%97%ADvirtual-memory-area-vma" aria-label="step 13 가상 메모리 영역virtual memory area vma permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 1.3 가상 메모리 영역(Virtual Memory Area, VMA)</h2>
 <p>위 <code class="language-text">mm_struct</code>필드 중에서 <code class="language-text">maple_tree</code> 의 타입을 갖는 <code class="language-text">mm_mt</code> 라는 값이 존재하였는데 이 부분도 중요하다보니 다루고자 한다.
@@ -233,13 +233,10 @@
 </ul>
 </li>
 </ul>
-<p>이 후 값은 MMIO에 대한 이해가 필요하니 이전 포스팅에서 익명 매핑(Anonymous Mapping)과 파일 매핑(File-backed Mapping)에 대해서 알고 오길 추천드린다.
-위에서 <code class="language-text">anon_vma, anon_vma_chain</code> 은 익명 매핑 시에 사용되고, <code class="language-text">vm_pgoff, vm_file</code>은 파일 매핑 시에 사용이 된다.</p>
+<p>이 후 값은 MMIO에 대한 이해가 필요하니 이전 포스팅에서 익명 매핑(Anonymous Mapping)과 파일 매핑(File-backed Mapping)에 대해서 알고 오길 추천드린다.</p>
+<p>위에서 <code class="language-text">anon_vma, anon_vma_chain</code> 은 익명 매핑 시에 사용되고, <code class="language-text">vm_pgoff, vm_file</code>은 파일 매핑 시에 사용이 된다.</p>
 <p>두 가지 구조로 따로 나눈 이유는 역방향 매핑과 관련되어 있는데 이 부분은 페이징때 자세히 다루도록 하고 간단하게 링크만 달아두도록 하겠다.</p>
 <ul>
-<li>
-<p>참고 : <a href="https://www.sobyte.net/post/2022-08/linux-anonymous-pages-reverse-mapping/">Reverse mapping of anonymous pages in Linux, SoByte</a></p>
-</li>
 <li>
 <p><code class="language-text">vm_file</code> : 파일 매핑을 사용할 경우 사용되는 실제 파일에 대한 링크를 갖는 구조체</p>
 </li>
@@ -251,20 +248,23 @@
 </li>
 <li>
 <p><code class="language-text">anon_vma_chain</code> : <code class="language-text">anon_vma</code> 만 사용하였을 경우 문제점을 해결하기 위해 도입된 필드</p>
-<ul>
-<li>익명 역 매핑(Anonymous Page Reverse Mapping) 매커니즘은 페이지 매핑을 해제한 후 매핑될 PTE(Page Table Entry)<sup id="fnref-9"><a href="#fn-9" class="footnote-ref">9</a></sup> 찾기 위해 전체 연결 목록인 <code class="language-text">vma</code>에 액세스한 후 순회하여 연결 목록에 액세스하는데 <code class="language-text">fork()</code>를 통해 복사된 하위 프로세스에서 쓰기 액세스가 발생하면 <code class="language-text">vma</code>에 새 익명 페이지가 할당되고, <code class="language-text">vma</code>는 이 익명 페이지를 가르키게 되는데 이 페이지가 <code class="language-text">vma</code>에 반영되지 않는 문제점이 존재하였음.</li>
-</ul>
 </li>
 </ul>
-<p>이제 <code class="language-text">tast_struct</code> 와 <code class="language-text">mm_struct</code>, <code class="language-text">vm_area_struct</code> 구조체에 대해 중요한 부분을 위주로 다뤄봤는데 리눅스 커널에서 프로세스가 할당되어 사용되는 구조를 각 구조체를 통해서 나타내면 아래와 같다.</p>
+<blockquote>
+<p>익명 역 매핑(Anonymous Page Reverse Mapping) 매커니즘은 페이지 매핑을 해제한 후 매핑될 PTE(Page Table Entry)<sup id="fnref-9"><a href="#fn-9" class="footnote-ref">9</a></sup> 찾기 위해 전체 연결 목록인 <code class="language-text">vma</code>에 액세스한 후 순회하여 연결 목록에 액세스하는데 <code class="language-text">fork()</code>를 통해 복사된 하위 프로세스에서 쓰기 액세스가 발생하면 <code class="language-text">vma</code>에 새 익명 페이지가 할당되고, <code class="language-text">vma</code>는 이 익명 페이지를 가르키게 되는데 이 페이지가 <code class="language-text">vma</code>에 반영되지 않는 문제점이 존재하였음.</p>
+</blockquote>
+<ul>
+<li>참고 : <a href="https://www.sobyte.net/post/2022-08/linux-anonymous-pages-reverse-mapping/">Reverse mapping of anonymous pages in Linux, SoByte</a></li>
+</ul>
+<p>리눅스 커널에서 프로세스가 할당되어 사용되는 구조를 각 구조체를 통해서 나타내면 아래와 같다.</p>
 <p align="center">
     <img src="https://i.imgur.com/sRBzgjS.png">
 </p>
 <p align="center">
     <em><a href="https://cs4118.github.io/www/2023-1/lect/21-linux-mm.html#struct-vm_area_struct-source-code">그림 5. Virtual address space with kernel data structures, COMS W4118 Operating Systems 1 - Columbia univ, 2023</a></em>
 </p>
-<p><code class="language-text">vm_next, vm_prev</code> 는 메이플 트리 도입<sup id="fnref-9"><a href="#fn-9" class="footnote-ref">9</a></sup> 이후로 삭제가 되었고, <code class="language-text">mm_struct</code>가 가르키는 것이 <code class="language-text">mmap</code> 이 아니라 <code class="language-text">mm_mt</code>로 변경되긴 해야겠지만 전반적인 큰 틀은 흡사하므로 이해할 수 있을 것이다.
-해당 그림을 이해를 못하겠다면 다시 한번 읽어보는 것을 추천드린다.  위에서 강조한 내용처럼 <strong>지금까지 다룬 구조체들은 커널에서 가장 중요한 구조체들</strong>이다.</p>
+<p><code class="language-text">vm_next, vm_prev</code> 는 메이플 트리 도입<sup id="fnref-9"><a href="#fn-9" class="footnote-ref">9</a></sup> 이후로 삭제가 되었고, <code class="language-text">mm_struct</code>가 가르키는 것이 <code class="language-text">mmap</code> 이 아니라 <code class="language-text">mm_mt</code>로 변경되긴 해야겠지만 전반적인 큰 틀은 흡사하므로 이해할 수 있을 것이다.</p>
+<p>해당 그림을 이해를 못하겠다면 다시 한번 읽어보는 것을 추천드린다.  위에서 강조한 내용처럼 <strong>지금까지 다룬 구조체들은 커널에서 가장 중요한 구조체들</strong>이다.</p>
 <h2 id="step-14-프로세스가-가상-주소-공간에-매핑되는-방식" style="position:relative;"><a href="#step-14-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4%EA%B0%80-%EA%B0%80%EC%83%81-%EC%A3%BC%EC%86%8C-%EA%B3%B5%EA%B0%84%EC%97%90-%EB%A7%A4%ED%95%91%EB%90%98%EB%8A%94-%EB%B0%A9%EC%8B%9D" aria-label="step 14 프로세스가 가상 주소 공간에 매핑되는 방식 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 1.4 프로세스가 가상 주소 공간에 매핑되는 방식</h2>
 <p>우리는 위에서 커널에서 중요한 구조 중 하나인 <code class="language-text">task_struct</code> 와 <code class="language-text">mm_struct</code>, <code class="language-text">vm_area_struct</code> 에 대해 알아보았다.
 이제 이 개념이 왜 중요한지 알아보도록 한다. 일단, 이를 위해서는 매핑되는 방식에 대해서 이해 해야한다.</p>
@@ -328,8 +328,8 @@
 <p>어찌됐든 간에 중요한 점은 유저 공간과 커널 공간이 공유 주소 공간을 사용하여 일정 부분 별로 나눠져있고, 이에 대해 직, 간접 매핑을 활용하여 각자의 장단점을 누릴 수 있게끔 설계되었다는 점이 중요하다.</p>
 <h2 id="step-14-페이지와-페이지-캐시" style="position:relative;"><a href="#step-14-%ED%8E%98%EC%9D%B4%EC%A7%80%EC%99%80-%ED%8E%98%EC%9D%B4%EC%A7%80-%EC%BA%90%EC%8B%9C" aria-label="step 14 페이지와 페이지 캐시 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 1.4 페이지와 페이지 캐시</h2>
 <h3 id="step-141-페이지" style="position:relative;"><a href="#step-141-%ED%8E%98%EC%9D%B4%EC%A7%80" aria-label="step 141 페이지 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 1.4.1 페이지</h3>
-<p>나중에 페이징을 별도로 포스팅할 예정인데 그 전에 리눅스 메모리 관리에 이해하려면 어찌됐든 페이지에 대해서 알긴 해야되서 간단하게 코드만 보고자 한다.
-각 물리적 프레임(Physical Frame)<sup id="fnref-11"><a href="#fn-11" class="footnote-ref">11</a></sup>은 <code class="language-text">struct page</code>라 부르는 페이지 값을 가지게 되는데 이 값은 물리적 프레임에 대한 메타데이터를 담고 있다.</p>
+<p>나중에 페이징을 별도로 포스팅할 예정인데 그 전에 리눅스 메모리 관리에 이해하려면 어찌됐든 페이지에 대해서 알긴 해야되서 간단하게 코드만 보고자 한다.</p>
+<p>각 물리적 프레임(Physical Frame)<sup id="fnref-11"><a href="#fn-11" class="footnote-ref">11</a></sup>은 <code class="language-text">struct page</code>라 부르는 페이지 값을 가지게 되는데 이 값은 물리적 프레임에 대한 메타데이터를 담고 있다.</p>
 <p>실제로 글로벌 메모리를 설정하는 부분에 전역 배열로 <code class="language-text">struct page</code> 값을 사용한다.</p>
 <div class="gatsby-highlight" data-language="c"><pre class="language-c"><code class="language-c"><span class="token comment">// https://github.com/torvalds/linux/blob/master/mm/memory.c#L102</span>
 <span class="token keyword">struct</span> <span class="token class-name">page</span> <span class="token operator">*</span>mem_map<span class="token punctuation">;</span></code></pre></div>
@@ -383,8 +383,8 @@
 <span class="token keyword">static</span> <span class="token keyword">inline</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token function">kmap</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">page</span> <span class="token operator">*</span>page<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
 <span class="token keyword">static</span> <span class="token keyword">inline</span> <span class="token keyword">void</span> <span class="token function">kunmap</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">page</span> <span class="token operator">*</span>page<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre></div>
-<p>이 메서드는 <code class="language-text">Highmem</code> 프레임을 <code class="language-text">Lowmem</code>에 있는 것처럼 참조할 수 있도록 매핑을 생성하며, 이미 사용하고자하는 프레임이 <code class="language-text">Lowmem</code>에 존재한다면 주소를 반환한다.
-이와 같은 <strong>메서드를 통해 프레임이 메모리에서 어디있는지 걱정하지 않고 사용</strong>할 수 있게 된다.
+<p>이 메서드는 <code class="language-text">Highmem</code> 프레임을 <code class="language-text">Lowmem</code>에 있는 것처럼 참조할 수 있도록 매핑을 생성하며, 이미 사용하고자하는 프레임이 <code class="language-text">Lowmem</code>에 존재한다면 주소를 반환한다.</p>
+<p>이와 같은 <strong>메서드를 통해 프레임이 메모리에서 어디있는지 걱정하지 않고 사용</strong>할 수 있게 된다.
 그러나, 이 매핑에도 제한적인 부분이 존재하므로 <code class="language-text">kunmap()</code> 을 통해서 매핑을 해제해줘야한다.</p>
 <h3 id="step-142-페이지-캐시" style="position:relative;"><a href="#step-142-%ED%8E%98%EC%9D%B4%EC%A7%80-%EC%BA%90%EC%8B%9C" aria-label="step 142 페이지 캐시 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 1.4.2 페이지 캐시</h3>
 <p>위에서 잠깐 페이지에 대해서 다뤘는데 이제 페이지 캐시(Page Cache)<sup id="fnref-12"><a href="#fn-12" class="footnote-ref">12</a></sup> 에 다뤄보고자 한다. 위에서 <code class="language-text">vm_area_struct</code> 를 볼 때 아래와 같은 필드가 존재하였었다.
@@ -480,10 +480,8 @@ LRU(Least Recently Used)의 약어로 잘 안쓰였던 페이지부터 교체하
 </ol>
 <p>참고로, 이 구조는 MySQL의 버퍼풀이 그대로 따르고 있으니 참고해보기 바란다.</p>
 <ul>
-<li>참고 : [</li>
+<li>참고 : <a href="https://omty.tistory.com/58">MySQL Innodb Buffer Pool 구조 및 캐시 전략, 고양이 중독</a></li>
 </ul>
-<p>[MySQL] Innodb Buffer Pool 구조 및 캐시 전략
-](<a href="https://omty.tistory.com/58">https://omty.tistory.com/58</a>)</p>
 <h2 id="step-2-본론" style="position:relative;"><a href="#step-2-%EB%B3%B8%EB%A1%A0" aria-label="step 2 본론 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 2. 본론</h2>
 <p>역시나 이전 포스팅과 같이 어떠한 개념을 이해하기 위해서 배경지식이 많이 필요하였다.
 대충 위의 배경지식을 이해하였더라도 이제 본론의 내용에 대해서 충분히 숙지할 수 있는 기본 지식이 갖춰졌다고 생각한다.</p>
@@ -512,8 +510,7 @@ Swap:           3910           0        3910</code></pre></div>
 즉, 캐시 영역은 이 페이지 캐시가 할당된 영역이라고 봐도 된다.</p>
 <p>그렇다면 buff는 무엇을 나타낼까? 이 영역은 버퍼 캐시 혹은 버퍼 영역이라고도 부르며, <strong>블록 디바이스가 가지고 있는 블록 자체에 대한 캐시</strong>이다.
 사실 이 개념은 페이지 캐시도 동일하다. 커널 2.2 이전에는 두 영역이 분리되어있었지만 합치게 되면서 대부분 페이지 캐시가 담당하는 역할이 되었다.</p>
-<p>그럼에도 아직까지 버퍼 영역을 사용하는 부분이 있는데 아래의 그림을 잠깐 보자.
-<img src="https://i.imgur.com/DnIcuIh.png" alt=""></p>
+<p>그럼에도 아직까지 버퍼 영역을 사용하는 부분이 있는데 아래의 그림을 잠깐 보자.</p>
 <p align="center">
     <img src="https://i.imgur.com/DnIcuIh.png">
 </p>
@@ -677,7 +674,7 @@ Inactive(anon):    71356 kB</code></pre></div>
 <p>커널도 일종의 프로세스이기 때문에 메모리를 관리를 해주어야하는데 버디 시스템에서는 기본적으로 <code class="language-text">4KB</code> 크기로 페이지를 할당해준다.
 하지만 이 크기는 커널 입장에서는 큰 단위이고, 커널 입장에서는 이 정도의 영역이 필요없다.</p>
 <p>이렇게 큰 영역을 할당 받아서 커널이 사용하게 되면 단편화(Fragmentation)<sup id="fnref-16"><a href="#fn-16" class="footnote-ref">16</a></sup> 현상도 발생할 수 있다. 이에 별도로 관리한다.</p>
-<p>**즉, <code class="language-text">Slab</code>은 메모리 영역 중 커널이 직접 사용하는 영역이라고 볼 수 있으며 페이지 단위로 관리되기에는 단편화 문제 등이 발생할 수 있기 때문에 <code class="language-text">Slab</code> 영역으로 따로 관리하는 것이다. **</p>
+<p><strong>즉, <code class="language-text">Slab</code>은 메모리 영역 중 커널이 직접 사용하는 영역이라고 볼 수 있으며 페이지 단위로 관리되기에는 단편화 문제 등이 발생할 수 있기 때문에 <code class="language-text">Slab</code> 영역으로 따로 관리하는 것이다.</strong></p>
 <p>이 <code class="language-text">Slab</code> 은 <code class="language-text">cat /proc/meminfo</code> 를 통해서 확인할 수 있다.</p>
 <div class="gatsby-highlight" data-language="sh"><pre class="language-sh"><code class="language-sh">Slab:              59648 kB
 SReclaimable:      24508 kB
@@ -763,19 +760,18 @@ SUnreclaim:        35140 kB</code></pre></div>
 <li><a href="https://cs4118.github.io/www/2023-1/lect/21-linux-mm.html">Linux Memory Management,  COMS W4118 Operating Systems 1</a></li>
 <li><a href="https://cs4118.github.io/www/2023-1/lect/09-syscalls.html">System Calls,  COMS W4118 Operating Systems 1</a></li>
 <li><a href="https://linux-kernel-labs.github.io/refs/heads/master/lectures/processes.html">Processes, Linux Kernel Labs</a></li>
-<li><a href="https://41d3n.xyz/272"> Linux Kernel task_struct structure, Aiden</a></li>
+<li><a href="https://41d3n.xyz/272">Linux Kernel task_struct structure, Aiden</a></li>
 <li><a href="https://velog.io/@jinh2352/Linux-5-%EB%A6%AC%EB%88%85%EC%8A%A4%EC%9D%98-%ED%83%9C%EC%8A%A4%ED%81%AC-%EB%AA%A8%EB%8D%B8">리눅스의 태스크 모델, ‘task_struct’ 자료구조, jinh2352</a></li>
 <li><a href="https://brunch.co.kr/@alden/25">리눅스 페이지 캐시와 버퍼 캐시, 강진우님</a></li>
-<li>[The Maple Tree, A Modern Data Structure for a Complex Problem</li>
+<li><a href="https://blogs.oracle.com/linux/post/the-maple-tree-a-modern-data-structure-for-a-complex-problem">The Maple Tree, A Modern Data Structure for a Complex Problem, Oracle Linux Blog</a></li>
+<li><a href="https://showx123.tistory.com/92">리눅스 커널의 mm_struct / vm_area_struct 구조체, BlackStar</a></li>
+<li><a href="https://itecnote.com/tecnote/linux-vm_flags-vs-vm_page_prot/">Linux – vm_flags vs vm_page_prot, iTecNote</a></li>
+<li><a href="https://www.sobyte.net/post/2022-08/linux-anonymous-pages-reverse-mapping">Reverse mapping of anonymous pages in Linux, Sobyte</a></li>
+<li><a href="https://hyeyoo.com/95">[Linux Kernel] 주소와 메모리 공간, Endless Learning</a></li>
+<li><a href="https://docs.kernel.org/admin-guide/device-mapper/cache.html">Cache, Linux Kernel Admin Guide</a></li>
+<li><a href="https://biriukov.dev/docs/page-cache/4-page-cache-eviction-and-page-reclaim">Page Cache eviction and page reclaim , Viacheslav Biriukov</a></li>
+<li><a href="https://pangyoalto.com/reduce-slab-memory/">[Linux] Slab 메모리 줄이기, Pangyoalto</a></li>
 </ol>
-<p>, Oracle Linux Blog](<a href="https://blogs.oracle.com/linux/post/the-maple-tree-a-modern-data-structure-for-a-complex-problem">https://blogs.oracle.com/linux/post/the-maple-tree-a-modern-data-structure-for-a-complex-problem</a>)
-8. <a href="https://showx123.tistory.com/92">리눅스 커널의 mm_struct / vm_area_struct 구조체, BlackStar</a>
-9. <a href="https://itecnote.com/tecnote/linux-vm_flags-vs-vm_page_prot/">Linux – vm_flags vs vm_page_prot, iTecNote</a>
-10. <a href="https://www.sobyte.net/post/2022-08/linux-anonymous-pages-reverse-mapping">Reverse mapping of anonymous pages in Linux, Sobyte</a>
-11. <a href="https://hyeyoo.com/95">[Linux Kernel] 주소와 메모리 공간, Endless Learning</a>
-12. <a href="https://docs.kernel.org/admin-guide/device-mapper/cache.html">Cache, Linux Kernel Admin Guide</a>
-13. <a href="https://biriukov.dev/docs/page-cache/4-page-cache-eviction-and-page-reclaim">Page Cache eviction and page reclaim , Viacheslav Biriukov</a>
-14. <a href="https://pangyoalto.com/reduce-slab-memory/">[Linux] Slab 메모리 줄이기, Pangyoalto</a></p>
 <div class="footnotes">
 <hr>
 <ol>
