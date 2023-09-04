@@ -17,8 +17,7 @@ categories: 개발 인프라 독서요약
 
 이전 내용에서는 커널을 이해하기 위한 배경지식과 더불어, `top`에서 나타내는 지표들을 읽는 법 그리고 Load Average가 어떤 부분을 나타내는 지 중점적으로 알아보았다. 
 
-이번 내용에서는 리눅스 내부 메모리 관리에 대해서 중점적으로 다루고자 한다. 
-그 전에 앞서 역시 이 부분 또한, 배경지식이 필요하다보니 배경지식에 대해서 다루고, 메모리와 관련된 지표들에 대한 내용을 다뤄보고자 한다.
+이번 내용에서는 리눅스 내부 메모리 관리에 대해서 중점적으로 다룬 후 `free` 와 `proc/meminfo` 가 나타내는 지표들에 대해서 보고자 한다. 그 전에 앞서 역시 이 부분 또한, 배경지식이 필요하다보니 배경지식에 대해서 다루고, 메모리와 관련된 지표들에 대한 내용을 다뤄보고자 한다.
 
 ## STEP 1. 서론
 
@@ -268,7 +267,7 @@ struct vm_area_struct {
     <img src="https://i.imgur.com/3JkVM2I.png">
 </p>
 <p align="center">
-    <em><a href="https://linux-kernel-labs.github.io/refs/heads/master/lectures/address-space.html#linux-address-space">그림 7. Dedicated, The Linux Kernel(5.10.14), Linux Address Space</a></em>
+    <em><a href="https://linux-kernel-labs.github.io/refs/heads/master/lectures/address-space.html#linux-address-space">그림 7. Dedicated, Shared Address Space, The Linux Kernel(5.10.14), Linux Address Space</a></em>
 </p>
 
 우리는 알다시피 유저 공간과 커널 공간이 나눠져있다는 점을 알고 있다.  위 그림은 그 공간을 나누는 방식에 대한 방식을 나타낸다. 
@@ -803,7 +802,7 @@ SUnreclaim:        35140 kB
 
 ## STEP 4. 추신
 
-책 내용을 처음 보았을 때 혼동하였던 부분은 LRU 캐시 정책을 따를 경우, 활성 리스트에 넣어진다고 혼동하였다.
+책 내용을 처음 보았을 때 혼동하였던 부분은 LRU 캐시 정책을 따를 경우, 초기 페이지가 활성 리스트에 넣어진다고 혼동하였다.
 이에 혼동되는 부분에 대해서 저자님께 문의를 드렸었는데 아래와 같이 답변이 왔다.
 
 ![](https://i.imgur.com/cxTVKuo.png)
