@@ -419,7 +419,7 @@ static inline void kunmap(struct page *page);
 리눅스는 기본적으로 write-back 캐시의 방식을 따른다고 알고있다.
 
 쓰기 작업 부분은 다른 포스팅에서도 다뤘는데 자세한 내용은 아래의 링크를 참고바란다.
-+ 참고 : https://brewagebear.github.io/fundamental-os-page-cache/#step-221-%ED%8E%98%EC%9D%B4%EC%A7%80-%EC%BA%90%EC%8B%9C%EC%99%80-%EB%8D%94%ED%8B%B0-%ED%8E%98%EC%9D%B4%EC%A7%80-%EB%8F%99%EA%B8%B0%ED%99%94
++ 참고 : [페이지 캐시와 더티 페이지 동기화](https://brewagebear.github.io/fundamental-os-page-cache/#step-221-%ED%8E%98%EC%9D%B4%EC%A7%80-%EC%BA%90%EC%8B%9C%EC%99%80-%EB%8D%94%ED%8B%B0-%ED%8E%98%EC%9D%B4%EC%A7%80-%EB%8F%99%EA%B8%B0%ED%99%94)
 
 
 이 뿐만 아니라 하나더 봐야하는 작업이 있다 바로, MMIO 관련 작업이다.
