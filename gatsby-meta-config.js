@@ -20,7 +20,7 @@ module.exports = {
     social: {
       github: `https://github.com/brewagebear`, // `https://github.com/zoomKoding`,
       linkedIn: ``, // `https://www.linkedin.com/in/jinhyeok-jeong-800871192`,
-      email: `workingssu@gmail.com`, // `zoomkoding@gmail.com`,
+      email: `dev.liquid.bear@gmail.com`, // `zoomkoding@gmail.com`,
     },
   },
 
