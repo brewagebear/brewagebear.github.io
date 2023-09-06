@@ -40,17 +40,17 @@ module.exports = {
         env: {
           production: {
             policy: [{ userAgent: '*', allow: '/' }],
-            sitemap: "https://brewagebear.github.io/sitemap.xml",
+            sitemap: "https://brewagebear.github.io/sitemap/sitemap-0.xml",
             host: "https://brewagebear.github.io",
           },
           'branch-deploy': {
             policy: [{ userAgent: '*', disallow: ['/'] }],
-            sitemap: "https://brewagebear.github.io/sitemap.xml",
+            sitemap: "https://brewagebear.github.io/sitemap/sitemap-0.xml",
             host: "https://brewagebear.github.io",
           },
           'deploy-preview': {
             policy: [{ userAgent: '*', disallow: ['/'] }],
-            sitemap: "https://brewagebear.github.io/sitemap.xml",
+            sitemap: "https://brewagebear.github.io/sitemap/sitemap-0.xml",
             host: "https://brewagebear.github.io",
           },
         },
