@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://brewagebear.github.io/sitemap.xml
+Sitemap: https://brewagebear.github.io/sitemap/sitemap-0.xml
 Host: https://brewagebear.github.io
