@@ -162,7 +162,7 @@ SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
     <img src="https://i.imgur.com/tuwGhkk.png">
 </p>
 <p align="center">
-    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 2. System Programming - TCP in Linux, Korea Univ, 2020, p.9</a></em>
+    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 2. 커널에서 관리되는 Socket 구조체, TCP in Linux, Korea Univ, 2020, p.9</a></em>
 </p>
 
 
@@ -179,7 +179,7 @@ SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
     <img src="https://i.imgur.com/wZcWe16.png">
 </p>
 <p align="center">
-    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 3. System Programming - TCP in Linux, Korea Univ, 2020, p.11</a></em>
+    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 3. Socket 초기 생성 이후 상태,TCP in Linux, Korea Univ, 2020, p.11</a></em>
 </p>
 
 
@@ -434,7 +434,7 @@ void tcp_fin(struct sock *sk)
     <img src="https://i.imgur.com/Ubiupzw.png">
 </p>
 <p align="center">
-    <em><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html">그림 6. Message Traffic Overview, New Hampshire Univ, 2000</a></em>
+    <em><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html">그림 6. TCP 메시지 송신 과정 개요, Message Traffic Overview, New Hampshire Univ, 2000</a></em>
 </p>
 
 
@@ -458,7 +458,7 @@ void tcp_fin(struct sock *sk)
     <img src="https://i.imgur.com/b4O9xVe.png">
 </p>
 <p align="center">
-    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 7. System Programming - TCP in Linux, Korea Univ, 2020, p.19</a></em>
+    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 7. tcp_sendmsg() 함수 내부 흐름, TCP in Linux, Korea Univ, 2020, p.19</a></em>
 </p>
 
 
@@ -468,7 +468,7 @@ void tcp_fin(struct sock *sk)
     <img src="https://i.imgur.com/NdGpFCI.png">
 </p>
 <p align="center">
-    <em><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html">그림 8. Message Traffic Overview, New Hampshire Univ, 2000</a></em>
+    <em><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html">그림 8. TCP 메시지 수신 과정 개요, Message Traffic Overview, New Hampshire Univ, 2000</a></em>
 </p>
 
 
@@ -1523,7 +1523,7 @@ static int tcp_orphan_retries(struct sock *sk, bool alive)
 5. [Message Traffic Overview - New Hampshire Univ](https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html#tth_chAp2)
 6. [System Programming, TCP in Linux - Korea Univ](https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf)
 
-## 같이 읽으면 좋은 내용들
+## 읽을거리
 1. [TCP/IP 네트워크 스택 이해하기 - Naver D2](https://d2.naver.com/helloworld/47667)
 2. [CLOSE_WAIT & TIME_WAIT 최종 분석 - Kakao Tech](https://tech.kakao.com/2016/04/21/closewait-timewait/)
 3. [Retry 전략에 대해서(Exponentional Backoff, Jitter) - Random Access Memories](https://jungseob86.tistory.com/12)
