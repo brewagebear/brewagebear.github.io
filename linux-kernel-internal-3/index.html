@@ -139,7 +139,7 @@
 <p><a href="#%EB%A0%88%ED%8D%BC%EB%9F%B0%EC%8A%A4">레퍼런스</a></p>
 </li>
 <li>
-<p><a href="#%EA%B0%99%EC%9D%B4-%EC%9D%BD%EC%9C%BC%EB%A9%B4-%EC%A2%8B%EC%9D%80-%EB%82%B4%EC%9A%A9%EB%93%A4">같이 읽으면 좋은 내용들</a></p>
+<p><a href="#%EC%9D%BD%EC%9D%84%EA%B1%B0%EB%A6%AC">읽을거리</a></p>
 </li>
 </ul>
 </div>
@@ -261,7 +261,7 @@
     <img src="https://i.imgur.com/tuwGhkk.png">
 </p>
 <p align="center">
-    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 2. System Programming - TCP in Linux, Korea Univ, 2020, p.9</a></em>
+    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 2. 커널에서 관리되는 Socket 구조체, TCP in Linux, Korea Univ, 2020, p.9</a></em>
 </p>
 <p>소켓은 다양한 구조체가 존재하는데 이 중에서 가장 추상화된 구조체가 <code class="language-text">struct socket</code><sup id="fnref-4"><a href="#fn-4" class="footnote-ref">4</a></sup> 이다.</p>
 <p>이 구조체(<code class="language-text">stuct socket</code><sup id="fnref-4"><a href="#fn-4" class="footnote-ref">4</a></sup>)가 종류에 따라서 결국 바깥쪽 껍데기가 다르게 씌어진다고 보면된다.</p>
@@ -271,7 +271,7 @@
     <img src="https://i.imgur.com/wZcWe16.png">
 </p>
 <p align="center">
-    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 3. System Programming - TCP in Linux, Korea Univ, 2020, p.11</a></em>
+    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 3. Socket 초기 생성 이후 상태,TCP in Linux, Korea Univ, 2020, p.11</a></em>
 </p>
 <p>여기서는 상태와 종류만 짚고 넘어가자. 중요한 <code class="language-text">write, receive, backlog queue</code> 에 대해서는 통신 과정을 설명하면서 짚어보고자 한다.</p>
 <p>초기화 이후니 당연히 상태는 <code class="language-text">SS_UNCONNECTED</code> (연결이 안된 상태) 일 것이고, TCP 소켓이므로 종류는 <code class="language-text">SOCK_STREAM</code> 으로 생성되었음을 확인할 수 있다.</p>
@@ -486,7 +486,7 @@ reset<span class="token operator">:</span>
     <img src="https://i.imgur.com/Ubiupzw.png">
 </p>
 <p align="center">
-    <em><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html">그림 6. Message Traffic Overview, New Hampshire Univ, 2000</a></em>
+    <em><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html">그림 6. TCP 메시지 송신 과정 개요, Message Traffic Overview, New Hampshire Univ, 2000</a></em>
 </p>
 <p>위에서 설명한 바와 같이 <strong>Application Layer <span class="math math-inline"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>⇒</mo></mrow><annotation encoding="application/x-tex">\Rightarrow</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.3669em;"></span><span class="mrel">⇒</span></span></span></span></span> Network Interface(= Link) Layer</strong> 로 이뤄지는 작업들을 볼 수 있다.
 전반적인 플로우는 아래와 같다.</p>
@@ -512,14 +512,14 @@ reset<span class="token operator">:</span>
     <img src="https://i.imgur.com/b4O9xVe.png">
 </p>
 <p align="center">
-    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 7. System Programming - TCP in Linux, Korea Univ, 2020, p.19</a></em>
+    <em><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">그림 7. tcp_sendmsg() 함수 내부 흐름, TCP in Linux, Korea Univ, 2020, p.19</a></em>
 </p>
 <h4 id="step-222-tcp-수신-과정" style="position:relative;"><a href="#step-222-tcp-%EC%88%98%EC%8B%A0-%EA%B3%BC%EC%A0%95" aria-label="step 222 tcp 수신 과정 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 2.2.2 TCP 수신 과정</h4>
 <p align="center">
     <img src="https://i.imgur.com/NdGpFCI.png">
 </p>
 <p align="center">
-    <em><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html">그림 8. Message Traffic Overview, New Hampshire Univ, 2000</a></em>
+    <em><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html">그림 8. TCP 메시지 수신 과정 개요, Message Traffic Overview, New Hampshire Univ, 2000</a></em>
 </p>
 <p>위에서 설명한 바와 같이 <strong>Network Interface(= Link) Layer <span class="math math-inline"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>⇒</mo></mrow><annotation encoding="application/x-tex">\Rightarrow</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.3669em;"></span><span class="mrel">⇒</span></span></span></span></span> Application Layer</strong> 로 이뤄지는 작업들을 볼 수 있다.</p>
 <p>사실, 메시지 수신 과정은 이미 3-Way Handshake를 진행하면서 다뤘다고 보면 된다.</p>
@@ -1346,7 +1346,7 @@ net.ipv4.tcp_synack_retries = 5</code></pre></div>
 <li><a href="https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html#tth_chAp2">Message Traffic Overview - New Hampshire Univ</a></li>
 <li><a href="https://os.korea.ac.kr/wp-content/uploads/2020/11/10_TCP-in-Linux.pdf">System Programming, TCP in Linux - Korea Univ</a></li>
 </ol>
-<h2 id="같이-읽으면-좋은-내용들" style="position:relative;"><a href="#%EA%B0%99%EC%9D%B4-%EC%9D%BD%EC%9C%BC%EB%A9%B4-%EC%A2%8B%EC%9D%80-%EB%82%B4%EC%9A%A9%EB%93%A4" aria-label="같이 읽으면 좋은 내용들 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>같이 읽으면 좋은 내용들</h2>
+<h2 id="읽을거리" style="position:relative;"><a href="#%EC%9D%BD%EC%9D%84%EA%B1%B0%EB%A6%AC" aria-label="읽을거리 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>읽을거리</h2>
 <ol>
 <li><a href="https://d2.naver.com/helloworld/47667">TCP/IP 네트워크 스택 이해하기 - Naver D2</a></li>
 <li><a href="https://tech.kakao.com/2016/04/21/closewait-timewait/">CLOSE_WAIT &#x26; TIME_WAIT 최종 분석 - Kakao Tech</a></li>
