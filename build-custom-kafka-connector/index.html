@@ -312,7 +312,7 @@
 <p>필자는 아주 간단한 소스 커넥터를 만들 예정이다.
 여기서, 구현할 구성요소는 <code class="language-text">Connector</code>와 <code class="language-text">Tasks</code> 정도라고 말할 수 있다. (<code class="language-text">Converter</code>, <code class="language-text">Transformer</code> 는 발표 준비 시간관계 상 제외했다.)</p>
 <p><strong>구글 폼의 응답을 저장하는 구글 시트의 데이터를 카프카에 적재</strong>하는 소스 커넥터이다.</p>
-<p>먼저, 편의를 위해서 <a href="https://github.com/provectus/kafka-ui">kafka-ui</a>i에서 제공해주는 도커 컴포즈 파일을 수정해서 사용하고자 한다.</p>
+<p>먼저, 편의를 위해서 <a href="https://github.com/provectus/kafka-ui">kafka-ui</a>에서 제공해주는 도커 컴포즈 파일을 수정해서 사용하고자 한다.</p>
 <p>우선 양이 꽤 되기에 전체 소스코드가 궁금한 독자분들이라면 <a href="https://github.com/brewagebear/blog-example/tree/main/kafka-example">kafka-example</a>를 참고하시길 바란다.</p>
 <p>필자의 docker-compose 파일을 다음과 같다.</p>
 <div class="gatsby-highlight" data-language="yml"><pre class="language-yml"><code class="language-yml"><span class="token punctuation">---</span>
@@ -365,10 +365,10 @@
         <span class="token punctuation">...</span></code></pre></div>
 <p><code class="language-text">environment</code>, <code class="language-text">command</code>와 같은 내용들은 생략을 했으나 전반적인 흐름은 볼 수 있을 것이다.</p>
 <p>이 중에서 볼 내용은 <code class="language-text">kafka-connect0</code> 서비스를 사용하는 이미지가 <code class="language-text">my-connecter</code> 라는 이미지를 사용했다는 점이다. 필자는 해당 도커 컴포즈 파일을 활용하기 위해서 컨플루언트의 베이스 이미지를 확장해서 빌드를 수행했다.</p>
-<div class="gatsby-highlight" data-language="text"><pre class="language-text"><code class="language-text">FROM confluentinc/cp-kafka-connect:7.2.1
-COPY ./plugins/ /usr/share/java
-ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
-USER 1001</code></pre></div>
+<div class="gatsby-highlight" data-language="docker"><pre class="language-docker"><code class="language-docker"><span class="token instruction"><span class="token keyword">FROM</span> confluentinc/cp-kafka-connect:7.2.1</span>
+<span class="token instruction"><span class="token keyword">COPY</span> ./plugins/ /usr/share/java</span>
+<span class="token instruction"><span class="token keyword">ENV</span> CONNECT_PLUGIN_PATH=<span class="token string">"/usr/share/java,/usr/share/confluent-hub-components"</span></span>
+<span class="token instruction"><span class="token keyword">USER</span> 1001</span></code></pre></div>
 <p>해당 내용은 컨플루언트의 kafka connect 공식 이미지를 베이스로 하여, 우리가 커스텀하게 개발한 커넥터의 <code class="language-text">jar</code> 파일을 컨테이너에 복사한 후에 <code class="language-text">CONNECT_PLUGIN_PATH</code> 에 경로에 넣기 하기 위함이다.</p>
 <p>자세한 내용을 확인하고 싶은 독자분들은 아래의 링크를 참고하길 바란다.</p>
 <ul>
@@ -714,6 +714,14 @@ java <span class="token punctuation">{</span>
 <p>이처럼 아주 다양한 곳에 쓰일 수 있으니 이번 기회에 한번 알아보는 것은 어떨까?</p>
 <h2 id="step-6-추신" style="position:relative;"><a href="#step-6-%EC%B6%94%EC%8B%A0" aria-label="step 6 추신 permalink" class="anchor before"><svg aria-hidden="true" focusable="false" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>STEP 6. 추신</h2>
 <p>스터디 회고와 커스텀 카프카 커넥트를 만든 내용에 대해서 한번 공유를 드려봤습니다.</p>
+<p>데모 시연 당시에는 좀 코드가 매우 하드코딩으로 더러웠었는데 나름 개선을 했어도 부족한 부분들이 있어보입니다.</p>
+<p>또한, 구글 시트 API에 대해서 제가 사실 매우 잘 알지는 못해서 단순 <code class="language-text">fetch</code> 하는 부분으로 처리하였는데 이런 부분도 참고해주시길 바랍니다.</p>
+<p>그리고 코드를 보시면 아시겠지만, 제 코드가 <strong>쓰레드세이프</strong>하지는 않습니다.</p>
+<p>정말 Kafka Connect API를 통해서 단순 예제를 만든 수준이니 실제 DBMS나 소스에서 처리할 커넥트에 대한 개발이 필요하신 분들이라면 Debezium처럼 신뢰도가 높은 커넥트를 토대로 개발을 진행하시는 걸 추천드립니다.</p>
+<ul>
+<li><a href="https://github.com/debezium/debezium">Debezium - Github</a></li>
+</ul>
+<hr>
 <p><img src="https://devocean.sk.com/editorImg/2023/11/16/d0d474ab450c09bbdcbbfe3ecf1f886e0abea65f001d5569c1ddef1326c7d8cf" alt="IMG_3213.jpeg"></p>
 <p>다시 한번 이러한 자리를 마련해주신 Kafka KRU와 데보션분들께 매우 감사하다는 말씀을 전달드리고 싶습니다.</p>
 <p>만약, 기회가 된다면 꼭 참여해보시길 적극 추천드립니다!</p>
