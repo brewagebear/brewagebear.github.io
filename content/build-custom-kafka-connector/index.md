@@ -272,7 +272,7 @@ Lambda 아키텍처 vs Kappa 아키텍처에 대한 자세한 내용을 알고 �
 
 **구글 폼의 응답을 저장하는 구글 시트의 데이터를 카프카에 적재**하는 소스 커넥터이다.
 
-먼저, 편의를 위해서 [kafka-ui](https://github.com/provectus/kafka-ui)i에서 제공해주는 도커 컴포즈 파일을 수정해서 사용하고자 한다.
+먼저, 편의를 위해서 [kafka-ui](https://github.com/provectus/kafka-ui)에서 제공해주는 도커 컴포즈 파일을 수정해서 사용하고자 한다.
 
 우선 양이 꽤 되기에 전체 소스코드가 궁금한 독자분들이라면 [kafka-example](https://github.com/brewagebear/blog-example/tree/main/kafka-example)를 참고하시길 바란다.
 
@@ -333,7 +333,7 @@ services:
 
 이 중에서 볼 내용은 `kafka-connect0` 서비스를 사용하는 이미지가 `my-connecter` 라는 이미지를 사용했다는 점이다. 필자는 해당 도커 컴포즈 파일을 활용하기 위해서 컨플루언트의 베이스 이미지를 확장해서 빌드를 수행했다.
 
-```
+```docker
 FROM confluentinc/cp-kafka-connect:7.2.1
 COPY ./plugins/ /usr/share/java
 ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
