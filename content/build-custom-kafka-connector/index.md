@@ -761,6 +761,18 @@ curl -X POST -H "Content-Type: application/json" -d @./google-sheet-source.json 
 
 스터디 회고와 커스텀 카프카 커넥트를 만든 내용에 대해서 한번 공유를 드려봤습니다.
 
+데모 시연 당시에는 좀 코드가 매우 하드코딩으로 더러웠었는데 나름 개선을 했어도 부족한 부분들이 있어보입니다.
+
+또한, 구글 시트 API에 대해서 제가 사실 매우 잘 알지는 못해서 단순 `fetch` 하는 부분으로 처리하였는데 이런 부분도 참고해주시길 바랍니다.
+
+그리고 코드를 보시면 아시겠지만, 제 코드가 **쓰레드세이프**하지는 않습니다. 
+
+정말 Kafka Connect API를 통해서 단순 예제를 만든 수준이니 실제 DBMS나 소스에서 처리할 커넥트에 대한 개발이 필요하신 분들이라면 Debezium처럼 신뢰도가 높은 커넥트를 토대로 개발을 진행하시는 걸 추천드립니다. 
+
++ [Debezium - Github](https://github.com/debezium/debezium)
+
+---
+
 ![IMG_3213.jpeg](https://devocean.sk.com/editorImg/2023/11/16/d0d474ab450c09bbdcbbfe3ecf1f886e0abea65f001d5569c1ddef1326c7d8cf)
 
 다시 한번 이러한 자리를 마련해주신 Kafka KRU와 데보션분들께 매우 감사하다는 말씀을 전달드리고 싶습니다.
