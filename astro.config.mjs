@@ -41,18 +41,7 @@ export default defineConfig({
 			footnoteLabelTagName: 'h2',
 		},
   	},
-	integrations: [
-		mdx(),
-		sitemap({
-			// 영어 포스트가 아직 없어 비어 있는 인덱스 페이지들 — 영어 콘텐츠가 생기면 제거
-			filter: (page) =>
-				![
-					'https://brewagebear.github.io/en/',
-					'https://brewagebear.github.io/en/posts/',
-					'https://brewagebear.github.io/en/tags/',
-				].includes(page),
-		}),
-	],
+	integrations: [mdx(), sitemap()],
 	fonts: [
 		{
 			provider: fontProviders.local(),
