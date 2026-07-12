@@ -1,0 +1,36 @@
+---
+// src/pages/tags/index.astro
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+
+// 1. 블로그 글을 모두 불러옵니다.
+const allPosts = await getCollection('blog');
+const koPosts = allPosts.filter(post => post.id.startsWith('ko/'));
+
+// 2. 글 데이터에서 tags 배열을 추출하고, 중복을 제거(Set)하여 고유 태그 목록을 만듭니다.
+const tags = [...new Set(koPosts.flatMap((post) => post.data.tags || []))];
+---
+
+<!doctype html>
+<html lang="ko">
+    <head>
+        <BaseHead title={`Tags - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+    </head>
+    <body>
+        <Header />
+        <main>
+            <section>
+                <h1>Tags</h1>
+                <div class="tags-container">
+                    {tags.map((tag) => (
+                        <a href={`/tags/${tag}/`} class="tag-link">#{tag}</a>
+                    ))}
+                </div>
+            </section>
+        </main>
+        <Footer />
+    </body>
+</html>

@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import { SITE_TITLE } from '../consts';
+
+// 1. 현재 접속 중인 URL 경로를 가져옵니다. (예: /posts/ 또는 /en/posts/)
+const pathname = Astro.url.pathname;
+
+// 2. 경로가 '/en'으로 시작하는지 확인하여 현재 언어를 파악합니다.
+const isEn = pathname.startsWith('/en');
+
+// 3. 실제로 존재하는 영어 페이지 경로 목록을 만듭니다. (없는 페이지로 전환 시 404 방지)
+const posts = await getCollection('blog');
+const enPagePaths = new Set(['/en/', '/en/posts/', '/en/tags/']);
+posts
+	.filter((post) => post.id.startsWith('en/'))
+	.forEach((post) => {
+		const slug = post.id
+			.replace(/^en\//, '')
+			.replace(/\/index\.md$/, '')
+			.replace(/\.md$/, '');
+		enPagePaths.add(`/en/${slug}/`);
+		(post.data.tags ?? []).forEach((tag) => enPagePaths.add(`/en/tags/${tag}/`));
+	});
+
+// 4. 언어 전환 시 이동할 URL을 동적으로 계산합니다.
+// - 현재 영어라면: 앞의 '/en'을 지워서 한국어 주소로 만듭니다. (빈 문자열이면 '/'로)
+const koUrl = isEn ? pathname.replace(/^\/en/, '') || '/' : pathname;
+// - 현재 한국어라면: 앞에 '/en'을 붙이되, 해당 영어 페이지가 없으면 영어 홈으로 보냅니다.
+const enCandidate = `/en${decodeURIComponent(pathname)}`.replace(/\/\/+/g, '/');
+const enUrl = isEn ? pathname : enPagePaths.has(enCandidate) ? enCandidate : '/en/';
+---
+
+<header>
+    <nav>
+        {/* 사이트 제목 클릭 시 현재 언어의 홈으로 이동 */}
+        <h1><a href={isEn ? "/en/" : "/"}>{SITE_TITLE}</a></h1>
+        <p>
+            {/* 네비게이션 메뉴 (언어별 분기) */}
+            <a href={isEn ? "/en/" : "/"}>Home</a> | 
+            <a href={isEn ? "/en/posts/" : "/posts/"}>Blog</a> 
+            
+            &nbsp; | &nbsp; 
+            
+            {/* 다국어 스위처: 현재 선택된 언어는 볼드 처리하고 링크를 제거합니다 */}
+            <span class="lang-switcher">
+                {!isEn ? (
+                    <><strong>KO</strong> / <a href={enUrl}>EN</a></>
+                ) : (
+                    <><a href={koUrl}>KO</a> / <strong>EN</strong></>
+                )}
+            </span>
+        </p>
+    </nav>
+</header>

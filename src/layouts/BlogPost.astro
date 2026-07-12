@@ -1,0 +1,61 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Comments from '../components/Comments.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION } from '../consts';
+import 'katex/dist/katex.min.css';
+
+type Props = CollectionEntry<'blog'>['data'];
+
+const { title, description, date, updatedDate, heroImage, tags } = Astro.props;
+const isEn = Astro.url.pathname.startsWith('/en/');
+const currentLang = isEn ? 'en' : 'ko';
+---
+
+<html lang={currentLang}>
+    <head>
+        <BaseHead title={title} description={description ?? SITE_DESCRIPTION} />
+    </head>
+
+    <body>
+        <Header />
+        <main>
+            <article>
+                {/* 썸네일 이미지가 있다면 그냥 출력합니다 */}
+                {heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+                
+                {/* 제목과 날짜는 의미에 맞게 header로 묶어줍니다 */}
+                <header>
+                    <h1>{title}</h1>
+                    <p>
+                        <FormattedDate date={date} />
+						
+    					{tags && tags.length > 0 && (
+        					<div class="post-tags">
+								{tags.map((tag) => (
+									<a href={isEn ? `/en/tags/${tag}/` : `/tags/${tag}/`}>#{tag}</a>
+								))}
+        					</div>
+    					)}
+
+                        {updatedDate && (
+                            <span>
+                                (Last updated: <FormattedDate date={updatedDate} />)
+                            </span>
+                        )}
+                    </p>
+                </header>
+                
+                {/* 마크다운 본문이 들어갈 자리입니다 */}
+                <slot />
+
+                <Comments lang={currentLang} />
+            </article>
+        </main>
+        <Footer />
+    </body>
+</html>

@@ -1,0 +1,39 @@
+---
+// 파일 위치: src/pages/en/index.astro
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    </head>
+    <body>
+        <Header />
+        <main>
+            <h1>🍻 Brewage Bear 🐼</h1>
+            <p>
+                I record the phenomena encountered within the endless cycle of software engineering in my own words.<br/>
+                In a world devoid of eternal answers, endurance is in itself a meaningful creation and a rebellion against the absurd.
+            </p>
+            <p>
+                This space is not a gallery for neatly polished "perfect answers."<br/>
+                Rather, it is the transparent trajectory of a struggle—willingly embracing despair to break through a single problem, and fiercely persisting, much like rolling the boulder up the mountain once again.
+            </p>
+            <ul>
+                <li><strong><a href="/en/posts/">Blog</a></strong>: The complete archive of my technical records and struggles.</li>
+                <li><strong><a href="/en/tags/">Tags</a></strong>: Scattered writings and thoughts, categorized by key interests.</li>
+            </ul>        
+            <p>
+                Should you have any thoughts or feedback while reading, please feel free to leave a comment at the bottom of the post.
+            </p>
+            <p>
+                👉 <a href="/en/posts/">Go to the English Blog</a>
+            </p>
+        </main>
+        <Footer />
+    </body>
+</html>

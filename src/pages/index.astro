@@ -1,0 +1,35 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+---
+
+<!doctype html>
+<html lang="ko">
+    <head>
+        <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    </head>
+    <body>
+        <Header />
+        <main>
+            <h1>🍻 Brewage Bear 🐼</h1>
+            <p>
+        		소프트웨어 엔지니어링이라는 굴레 속에서 마주하는 표상(表象)들을 저만의 언어로 기록합니다.<br/>
+        		영원히 정답없는 세계에서 인종(忍從)은, 그 자체로 의미 있는 창조이자 부조리에 대한 반항입니다.
+    		</p>
+			<p>
+				이곳은 매끄럽게 가공된 '완벽한 해답'을 진열하는 공간이 아닙니다. <br/> 
+				오히려 하나의 문제를 타파하기 위해 기꺼이 절망하고, 다시 바위를 밀어 올리듯 치열하게 파고들었던 투명한 투쟁의 궤적입니다.
+    		</p>
+            <ul>
+                <li><strong><a href="/posts/">Blog</a></strong>: 제가 작성한 모든 기술 기록을 확인할 수 있습니다.</li>
+                <li><strong><a href="/tags/">Tags</a></strong>: 흩어진 글들을 주요 관심사별로 묶어 두었습니다.</li>
+            </ul>
+            <p>
+                글을 읽다 남기고 싶은 생각이나 피드백이 있다면, 언제든 글 하단에 댓글을 남겨주세요.
+            </p>
+        </main>
+        <Footer />
+    </body>
+</html>

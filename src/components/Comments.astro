@@ -1,0 +1,44 @@
+---
+// giscus 댓글 위젯 (https://giscus.app)
+//
+// GISCUS_CATEGORY_ID가 비어 있으면 댓글 영역을 렌더링하지 않습니다.
+// 활성화 절차:
+//   1. brewagebear/blog-comments 리포에서 Settings → Features → Discussions 활성화
+//   2. https://github.com/apps/giscus 앱을 해당 리포에 설치
+//   3. https://giscus.app 에서 리포 입력 후 발급되는 categoryId를 아래에 입력
+//      (카테고리는 GISCUS_CATEGORY와 동일한 이름의 Announcement 타입 권장)
+const GISCUS_REPO = 'brewagebear/blog-comments';
+const GISCUS_REPO_ID = 'MDEwOlJlcG9zaXRvcnkyOTQwODg3ODc=';
+const GISCUS_CATEGORY = 'Comments';
+const GISCUS_CATEGORY_ID = 'DIC_kwDOEYdwU84DBBWI';
+
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'ko' } = Astro.props;
+---
+
+{
+	GISCUS_CATEGORY_ID && (
+		<section class="comments">
+			<script
+				is:inline
+				src="https://giscus.app/client.js"
+				data-repo={GISCUS_REPO}
+				data-repo-id={GISCUS_REPO_ID}
+				data-category={GISCUS_CATEGORY}
+				data-category-id={GISCUS_CATEGORY_ID}
+				data-mapping="pathname"
+				data-strict="0"
+				data-reactions-enabled="1"
+				data-emit-metadata="0"
+				data-input-position="bottom"
+				data-theme="preferred_color_scheme"
+				data-lang={lang}
+				async
+				crossorigin="anonymous"
+			/>
+		</section>
+	)
+}

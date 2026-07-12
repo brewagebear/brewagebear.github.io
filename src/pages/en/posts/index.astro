@@ -1,0 +1,53 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../../components/BaseHead.astro';
+import Footer from '../../../components/Footer.astro';
+import FormattedDate from '../../../components/FormattedDate.astro';
+import Header from '../../../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../../consts';
+
+// 1. 모든 포스트를 가져와서 날짜순 정렬
+const allPosts = (await getCollection('blog')).sort(
+    (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+// 2. 'en/' 으로 시작하는 영어 포스트만 필터링
+const enPosts = allPosts.filter(post => post.id.startsWith('en/'));
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <BaseHead title={`Blog - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+    </head>
+    <body>
+        <Header />
+        <main>
+            <section>
+                <h1>Blog (English)</h1>
+                <ul>
+                    {
+                        enPosts.map((post) => {
+                            const cleanSlug = post.id
+								.replace(/^en\//, '')
+								.replace(/\/index\.md$/, '')
+								.replace(/\.md$/, '');
+
+                            return(
+                                <li>
+                                    <a href={`/en/${cleanSlug}/`}>
+                                        {post.data.title}
+                                    </a>
+                                    <time>
+                                        <FormattedDate date={post.data.date} />
+                                    </time>
+                                </li>
+                            );
+                        })  
+                    }
+                </ul>
+            </section>
+        </main>
+        <Footer />
+    </body>
+</html>

@@ -1,0 +1,72 @@
+---
+// src/pages/tags/[tag].astro
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import { SITE_TITLE } from '../../consts';
+
+export async function getStaticPaths() {
+    const allPosts = await getCollection('blog');
+    const koPosts = allPosts.filter(post => post.id.startsWith('ko/'));
+    
+    // 모든 고유 태그 추출
+    const tags = [...new Set(koPosts.flatMap((post) => post.data.tags || []))];
+
+    // 각 태그별로 경로(path)와 해당 태그가 포함된 글(posts)을 매핑하여 반환합니다.
+    return tags.map((tag) => {
+        const filteredPosts = koPosts
+            .filter((post) => post.data.tags?.includes(tag))
+            .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()); // 최신순 정렬
+            
+        return {
+            params: { tag },
+            props: { posts: filteredPosts },
+        };
+    });
+}
+
+// URL 파라미터에서 tag 이름을, props에서 필터링된 글 목록을 받아옵니다.
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+---
+
+<!doctype html>
+<html lang="ko">
+    <head>
+        <BaseHead title={`#${tag} - ${SITE_TITLE}`} description={`${tag} 태그가 포함된 글 목록입니다.`} />
+    </head>
+    <body>
+        <Header />
+        <main>
+            <section>
+                <h1>#{tag}</h1>
+                
+                <ul class="post-list">
+                    {
+                        posts.map((post) => {
+                            // 기존 URL 구조를 위해 경로 정제
+                            const cleanSlug = post.id
+                                .replace(/^ko\//, '')
+                                .replace(/\/index\.md$/, '')
+                                .replace(/\.md$/, '');
+                            
+                            return (
+                                <li>
+                                    <a href={`/${cleanSlug}/`}>
+                                        {post.data.title}
+                                    </a>
+                                    <time>
+                                        <FormattedDate date={post.data.date} />
+                                    </time>
+                                </li>
+                            );
+                        })
+                    }
+                </ul>
+            </section>
+        </main>
+        <Footer />
+    </body>
+</html>

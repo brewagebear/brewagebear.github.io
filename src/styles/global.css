@@ -1,0 +1,195 @@
+/* src/styles/global.css */
+
+:root {
+  --width: 720px;
+  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  --font-secondary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  --font-scale: 1em;
+  --background-color: #fff;
+  --heading-color: #222;
+  --text-color: #444;
+  --link-color: #3273dc;
+  --visited-color: #8b6fcb;
+  --code-background-color: #f2f2f2;
+  --code-color: #222;
+  --blockquote-color: #222;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #111;
+    --heading-color: #eee;
+    --text-color: #ddd;
+    --link-color: #8cc2dd;
+    --visited-color: #8b6fcb;
+    --code-background-color: #222;
+    --code-color: #ddd;
+    --blockquote-color: #ccc;
+  }
+}
+
+body {
+  font-family: var(--font-secondary);
+  font-size: var(--font-scale);
+  margin: auto;
+  padding: 20px;
+  max-width: var(--width);
+  text-align: left;
+  background-color: var(--background-color);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-main);
+  color: var(--heading-color);
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:visited {
+  color: var(--visited-color);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+code {
+  background-color: var(--code-background-color);
+  color: var(--code-color);
+  padding: 0.1rem 0.2rem;
+  border-radius: 0.2rem;
+}
+
+pre code {
+  display: block;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+blockquote {
+  border-left: 3px solid var(--blockquote-color);
+  padding-left: 1rem;
+  margin-left: 0;
+  color: var(--blockquote-color);
+  font-style: italic;
+}
+
+/* --- 각주(Footnotes) 영역 스타일 최적화 --- */
+
+/* 각주 섹션 전체 설정 */
+.footnotes {
+  margin-top: 3rem;
+  border-top: 1px dashed var(--text-color); /* Bear Blog 느낌의 구분선 */
+  padding-top: 1rem;
+  font-size: 0.85em; /* 본문보다 약간 작은 글씨 */
+  opacity: 0.9;
+}
+
+/* '각주' 제목 사이즈 조절 */
+.footnotes h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 리스트 항목 간격 줄이기 */
+.footnotes li {
+  margin-bottom: 0.3rem; 
+}
+
+/* li 안의 p 태그 여백 제거 (핵심) */
+.footnotes li p {
+  display: inline; /* 블록 요소를 인라인으로 변경해 줄바꿈 방지 */
+  margin: 0;
+}
+
+/* 본문으로 돌아가는 화살표(↩) 디자인 */
+.data-footnote-backref {
+  text-decoration: none;
+  margin-left: 0.2rem;
+  font-family: var(--font-secondary);
+}
+
+/* 1. 공통: 기본으로 생성되는 'Footnotes' 글자는 숨깁니다 */
+.footnotes h2 {
+  visibility: hidden;  
+  font-size: 0;        
+  margin-bottom: 0.5rem;
+}
+
+/* 2. 한국어 페이지(lang="ko")일 때는 '각주' 출력 */
+:lang(ko) .footnotes h2::after {
+  content: '각주';      
+  visibility: visible; 
+  font-size: 1.2rem;   
+  display: block;
+}
+
+/* 3. 영어 페이지(lang="en")일 때는 'Footnotes' 출력 */
+:lang(en) .footnotes h2::after {
+  content: 'Footnotes';      
+  visibility: visible; 
+  font-size: 1.2rem;   
+  display: block;
+}
+
+/* --- 글 목록(Post List) 가독성 개선 --- */
+.post-list {
+  list-style: none; /* 투박한 기본 점(•) 제거 */
+  padding: 0;
+  margin-top: 2rem;
+}
+
+.post-list li {
+  margin-bottom: 1.5rem; /* 각 글 사이의 여백을 시원하게 확보 */
+  display: flex;
+  flex-direction: column; /* 제목과 날짜를 위아래로 분리 */
+}
+
+.post-list a {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  margin-bottom: 0.3rem; /* 제목과 날짜 사이 간격 */
+}
+
+.post-list time {
+  font-size: 0.85em;
+  opacity: 0.6; /* 날짜는 시선을 덜 뺏도록 투명도 조절 */
+  font-family: var(--font-main);
+}
+
+/* --- 태그 스타일 --- */
+.tags-container, .post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tags-container a, .post-tags a {
+  font-family: var(--font-main);
+  font-size: 0.9em;
+  color: var(--link-color);
+  background-color: var(--code-background-color);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.tags-container a:hover, .post-tags a:hover {
+  opacity: 0.7;
+  text-decoration: none;
+}

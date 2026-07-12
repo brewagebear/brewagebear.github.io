@@ -1,0 +1,30 @@
+---
+interface Props {
+    // 1. date가 없을 수도 있다(undefined)고 타입을 느슨하게 열어줍니다.
+    date?: Date | string | number | undefined; 
+}
+
+const { date } = Astro.props;
+
+// 2. 넘어온 date가 올바른 Date 객체인지 확인하고 변환합니다.
+const validDate = date ? new Date(date) : null;
+---
+
+{
+    // 3. validDate가 존재할 때만 <time> 태그를 렌더링합니다.
+    validDate ? (
+        <time datetime={validDate.toISOString()}>
+            {
+                validDate.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: 'Asia/Seoul', // 빌드 서버 타임존(UTC 등)과 무관하게 KST 기준으로 표기
+                })
+            }
+        </time>
+    ) : (
+        /* 날짜가 없을 경우 아무것도 안 보여주거나 기본 텍스트를 출력합니다. */
+        <span></span>
+    )
+}

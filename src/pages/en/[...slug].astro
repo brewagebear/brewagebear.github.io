@@ -1,0 +1,31 @@
+---
+import { type CollectionEntry, getCollection, render } from 'astro:content';
+import BlogPost from '../../layouts/BlogPost.astro';
+
+export async function getStaticPaths() {
+    const posts = await getCollection('blog');
+    
+    // 'en/' 폴더에 있는 글만 필터링합니다
+    const enPosts = posts.filter(post => post.id.startsWith('en/'));
+    
+    return enPosts.map((post) => {
+        const slug = post.id
+            .replace(/^en\//, '')
+            .replace(/\/index\.md$/, '')
+            .replace(/\.md$/, '');
+
+        return {
+            params: { slug },
+            props: post,
+        };
+    });
+}
+type Props = CollectionEntry<'blog'>;
+
+const post = Astro.props;
+const { Content } = await render(post);
+---
+
+<BlogPost {...post.data}>
+    <Content />
+</BlogPost>
